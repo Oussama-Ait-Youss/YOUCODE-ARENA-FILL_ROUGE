@@ -18,9 +18,16 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
+        'email_verified_at',
         'password',
+        'is_banned',
+        'banned_by',
+        'banned_by',
+        'banned_reason',
+        'last_login',
+        'remember_token'
     ];
 
     /**
@@ -44,5 +51,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function isBanned(){
+        return $this->is_banned;
     }
 }
