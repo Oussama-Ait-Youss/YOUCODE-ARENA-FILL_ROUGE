@@ -396,7 +396,7 @@ body::after {
             </div>
 
             <div class="auth-footer">
-                Already have an account? <a href="#">Log in</a>
+                Already have an account? <a href="{{route('login')}}">Log in</a>
             </div>
         </div>
 
