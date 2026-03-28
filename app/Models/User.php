@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Role;
 
 class User extends Authenticatable
 {
@@ -23,7 +24,6 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'is_banned',
-        'banned_by',
         'banned_by',
         'banned_reason',
         'last_login',
@@ -54,5 +54,15 @@ class User extends Authenticatable
     }
     public function isBanned(){
         return $this->is_banned;
+    }
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
+    }
+
+    
+    public function hasRole(string $roleName): bool
+    {
+        return $this->roles()->where('name', $roleName)->exists();
     }
 }

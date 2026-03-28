@@ -372,19 +372,22 @@ body::after {
                 <p>Create your competitor profile today.</p>
             </div>
 
-            <form>
+           <form method="POST" action="{{ route('register') }}">
+                @csrf 
+
                 <div class="form-group">
-                    <input type="text" placeholder="Your gamertag / username" />
+                    <input type="text" name="username" value="{{ old('username') }}" required autofocus placeholder="Your gamertag / username" />
                 </div>
                 <div class="form-group">
-                    <input type="email" placeholder="Your email address" />
+                    <input type="email" name="email" value="{{ old('email') }}" required placeholder="Your email address" />
                 </div>
                 <div class="form-group">
-                    <input type="password" placeholder="Create password" />
+                    <input type="password" name="password" required placeholder="Create password" />
                 </div>
                 <div class="form-group" style="margin-bottom: 1.25rem;">
-                    <input type="password" placeholder="Confirm password" />
+                    <input type="password" name="password_confirmation" required placeholder="Confirm password" />
                 </div>
+                
                 <button type="submit" class="btn-submit">Sign up</button>
             </form>
 

@@ -382,15 +382,19 @@ body::after {
 
             <div class="divider">Login with Others</div>
 
-            <form>
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+
                 <div class="form-group">
-                    <input type="email" placeholder="Username" />
+                    <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Your email address" />
                 </div>
                 <div class="form-group" style="margin-bottom:0.5rem;">
-                    <input type="password" placeholder="Password" />
+                    <input type="password" name="password" required placeholder="Password" />
                 </div>
+                
                 <a href="#" class="forgot-password">Forgot password?</a>
-                <button type="submit" class="btn-submit">Next</button>
+                
+                <button type="submit" class="btn-submit">Log in</button>
             </form>
 
             <div class="auth-footer">

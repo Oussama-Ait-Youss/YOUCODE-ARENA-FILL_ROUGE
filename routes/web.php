@@ -19,3 +19,27 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
+
+// RBAC
+Route::middleware('auth')->group(function () {
+    
+    // Route globale pour tous les utilisateurs connectés
+    Route::get('/dashboard', function () {
+        return 'Bienvenue sur ton espace personnel !';
+    })->name('dashboard');
+
+    // Route exclusive à l'Admin (God Mode)
+    Route::middleware('role:Admin')->group(function () {
+        Route::get('/admin/dashboard', function () {
+            return 'Accès autorisé : Bonjour Administrateur.';
+        });
+    });
+
+    // Route exclusive à l'Organisateur
+    Route::middleware('role:Organisateur')->group(function () {
+        Route::get('/organizer/tournaments', function () {
+            return 'Accès autorisé : Espace de gestion des tournois.';
+        });
+    });
+
+});
