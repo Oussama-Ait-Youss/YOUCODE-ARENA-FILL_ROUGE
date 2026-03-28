@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('competitor_profiles', function (Blueprint $table) {
-            $table->id();
+            // $table->id();
             $table->foreignId('user_id')->primary()->constrained('users')->cascadeOnDelete();
             $table->integer('games_won')->default(0);
             $table->integer('games_loss')->default(0);
