@@ -398,7 +398,7 @@ body::after {
             </form>
 
             <div class="auth-footer">
-                Don't have an account? <a href="#">Sign up</a>
+                Don't have an account? <a href="{{route('register')}}">Sign up</a>
             </div>
         </div>
 
