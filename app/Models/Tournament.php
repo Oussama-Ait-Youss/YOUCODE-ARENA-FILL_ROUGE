@@ -53,4 +53,32 @@ class Tournament extends Model
     }
 
 
+    // Logique de Quotas et de Cloture
+    
+    public function getRegisteredCountAttribute(): int
+    {
+       
+        return $this->registrations()->count();
+    }
+
+   
+    public function getIsFullAttribute(): bool
+    {
+        return $this->registered_count >= $this->max_capacity;
+    }
+
+    
+    public function getIsPastAttribute(): bool
+    {
+        return $this->event_date->isPast();
+    }
+
+    
+    public function getCanRegisterAttribute(): bool
+    {
+        
+        return !$this->is_past && !$this->is_full && $this->status !== 'Terminées';
+    }
+
+
 }
