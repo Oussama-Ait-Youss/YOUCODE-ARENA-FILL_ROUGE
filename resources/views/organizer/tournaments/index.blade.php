@@ -64,7 +64,18 @@
                         <td>{{ $tournament->game->name }}</td>
                         <td>{{ $tournament->category->name }}</td>
                         <td>{{ $tournament->event_date->format('d/m/Y - H:i') }}</td>
-                        <td>0 / {{ $tournament->max_capacity }}</td>
+                        
+                        <td>
+                            <span style="font-weight: 600; color: {{ $tournament->is_full ? '#ef4444' : '#10b981' }};">
+                                {{ $tournament->registered_count }}
+                            </span> 
+                            / {{ $tournament->max_capacity }}
+                            
+                            @if($tournament->is_full)
+                                <br><span style="font-size: 0.7rem; color: #ef4444; font-weight: bold;">(COMPLET)</span>
+                            @endif
+                        </td>
+
                         <td>
                             <span class="status status-{{ Str::slug($tournament->status) }}">
                                 {{ $tournament->status }}
