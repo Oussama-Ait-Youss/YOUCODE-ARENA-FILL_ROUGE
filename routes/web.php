@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Organizer\TournamentController;
+use App\Http\Controllers\Competitor\TournamentExplorerController;
+use App\Http\Controllers\Competitor\TeamController;
+
+
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
@@ -48,4 +52,22 @@ Route::middleware('auth')->group(function () {
     
 });
 
+});
+// --- ROUTES POUR LES COMPÉTITEURS --- //
+Route::middleware(['auth', 'role:Compétiteur'])->prefix('competitor')->name('competitor.')->group(function () {
+    
+    // Le catalogue des tournois ouverts
+    Route::get('/tournaments', [TournamentExplorerController::class, 'index'])->name('tournaments.index');
+    
+});
+Route::middleware(['auth', 'role:Compétiteur'])->prefix('competitor')->name('competitor.')->group(function () {
+    
+    // Le catalogue
+    Route::get('/tournaments', [TournamentExplorerController::class, 'index'])->name('tournaments.index');
+    
+   
+    Route::get('/tournaments/{tournament}/teams/create', [TeamController::class, 'create'])->name('teams.create');
+    Route::post('/tournaments/{tournament}/teams', [TeamController::class, 'store'])->name('teams.store');
+    Route::get('/my-teams', [TeamController::class, 'index'])->name('teams.index');
+    
 });
