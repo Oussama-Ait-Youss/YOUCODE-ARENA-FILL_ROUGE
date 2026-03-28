@@ -12,7 +12,7 @@ class Registration extends Model
     protected $fillable = [
         'user_id',
         'tournament_id',
-        'status'
+        'status,50'
     ];
 
 

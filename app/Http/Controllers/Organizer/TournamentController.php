@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class TournamentController extends Controller
 {
     public function index(){
-        $tournaments = Tournament::where('organizer_id',Auth::id())->latest()-get();
+        $tournaments = Tournament::where('organizer_id',Auth::id())->latest()->get();
         return view('organizer.tournaments.index',compact('tournaments'));
     }
 
@@ -45,5 +45,54 @@ class TournamentController extends Controller
         ptions !');
     }
 
+
+    public function destroy(Tournament $tournament)
+    {
+       
+        if ($tournament->organizer_id !== Auth::id()) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        $tournament->delete();
+
+        return redirect()->route('organizer.tournaments.index')
+                         ->with('success', 'Le tournoi a été supprimé avec succès.');
+    }
+
+
+    
+    public function edit(Tournament $tournament)
+    {
+       
+        if ($tournament->organizer_id !== Auth::id()) {
+            abort(403, 'Action non autorisée. Ce tournoi ne vous appartient pas.');
+        }
+
+        $games = Game::all();
+        $categories = Category::all();
+        
+        return view('organizer.tournaments.edit', compact('tournament', 'games', 'categories'));
+    }
+
+    
+    public function update(Request $request, Tournament $tournament)
+    {
+        if ($tournament->organizer_id !== Auth::id()) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'game_id' => 'required|exists:games,id',
+            'category_id' => 'required|exists:categories,id',
+            'max_capacity' => 'required|integer|min:2',
+            'event_date' => 'required|date',
+        ]);
+
+        $tournament->update($validated);
+
+        return redirect()->route('organizer.tournaments.index')
+                         ->with('success', 'Le tournoi a été modifié avec succès !');
+    }
 
 }
