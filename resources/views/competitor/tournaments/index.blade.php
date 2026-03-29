@@ -1,267 +1,174 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arène des Tournois - YouCode Arena</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Arène - YouCode Arena</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
-
-        :root {
-            --bg-page: #0b0b0e; /* On passe sur un fond très sombre pour l'immersion gaming */
-            --bg-card: #16161a;
-            --text-white: #ffffff;
-            --text-gray: #9ca3af;
-            --accent-orange: #f97316;
-            --accent-orange-hover: #ea580c;
-            --border-dark: #27272a;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+        
+        :root { 
+            --bg: #0b0b0e; 
+            --card: #16161a; 
+            --orange: #f97316; 
+            --gray: #9ca3af; 
+            --border: #27272a;
         }
 
-        body {
-            background-color: var(--bg-page);
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-white);
+        body { 
+            background: var(--bg); 
+            font-family: 'Poppins', sans-serif; 
+            color: white; 
             margin: 0;
-            padding: 2rem;
-            min-height: 100vh;
+            padding: 1.5rem; /* Padding réduit pour mobile */
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        .header {
+        .header-section {
             text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
+            margin-bottom: 2rem;
         }
 
-        .header h1 {
-            font-size: 3rem;
-            font-weight: 900;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: -1px;
-            background: linear-gradient(to right, #f97316, #fb923c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .header-section h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--orange); }
+        .header-section p { color: var(--gray); font-size: 0.9rem; margin-top: 0; }
+
+        /* --- SYSTÈME DE FILTRES --- */
+        .filters {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur petit écran */
+            margin-bottom: 2rem;
         }
 
-        .header p {
-            color: var(--text-gray);
-            font-size: 1.1rem;
-            margin-top: 0.5rem;
+        .filter-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--gray);
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        /* --- GRID DES CARTES --- */
-        .tournaments-grid {
+        .filter-btn:hover { border-color: var(--orange); color: white; }
+        
+        .filter-btn.active {
+            background: var(--orange);
+            color: white;
+            border-color: var(--orange);
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+
+        /* --- GRILLE MOBILE FIRST --- */
+        .tournament-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
+            /* 1 colonne par défaut (Mobile) */
+            grid-template-columns: 1fr; 
+            gap: 1.5rem;
         }
 
-        .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-dark);
+        /* À partir d'une tablette (768px), on passe à 2 colonnes, sur PC (1024px) 3 colonnes */
+        @media (min-width: 768px) { .tournament-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .tournament-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        /* --- CARTE TOURNOI --- */
+        .t-card {
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 20px;
             padding: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.15);
-            border-color: rgba(249, 115, 22, 0.4);
-        }
-
-        /* Badge de catégorie (ex: E-sport) */
-        .badge-category {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-white);
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .card-game {
-            color: var(--accent-orange);
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin: 0 0 1rem 0;
-            line-height: 1.2;
-        }
-
-        .card-details {
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
-        }
-
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-gray);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .detail-icon { font-size: 1.1rem; }
-
-        /* Jauge de places */
-        .quota-bar {
-            width: 100%;
-            height: 6px;
-            background: #333;
-            border-radius: 10px;
-            margin-top: 1rem;
-            overflow: hidden;
-        }
-
-        .quota-fill {
-            height: 100%;
-            background: var(--accent-orange);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        .quota-fill.full { background: #ef4444; } /* Devient rouge si plein */
-
-        .quota-text {
-            display: flex;
             justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-gray);
-            margin-top: 0.3rem;
-            font-weight: 600;
+            transition: transform 0.3s;
         }
+        
+        .t-card:hover { transform: translateY(-5px); border-color: var(--orange); }
 
-        /* Bouton d'action */
+        .t-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .t-game { color: var(--orange); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+        .t-status { background: #27272a; font-size: 0.7rem; padding: 4px 10px; border-radius: 10px; font-weight: 600; }
+        
+        .t-title { font-size: 1.2rem; font-weight: 800; margin: 0 0 10px 0; }
+        
+        .t-info { display: flex; justify-content: space-between; color: var(--gray); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
         .btn-join {
-            display: block; /* La correction magique pour les balises <a> */
-            width: 100%;
-            box-sizing: border-box;
-            background-color: var(--accent-orange);
-            color: var(--text-white);
-            border: none;
-            padding: 1rem;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.3s ease; /* Transition plus douce */
-            text-align: center;
-            text-decoration: none;
+            display: block; width: 100%; text-align: center; text-decoration: none;
+            background: var(--orange); color: white; padding: 12px; border-radius: 12px;
+            font-weight: 700; font-size: 0.9rem; transition: 0.3s;
         }
-
-        .btn-join:hover { 
-            background-color: var(--accent-orange-hover);
-            transform: translateY(-2px); /* Petit effet de soulèvement */
-            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3); /* Lueur orange */
-        }
-
+        .btn-join:hover { background: #ea580c; }
+        
         .btn-disabled {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            background-color: #3f3f46;
-            color: #a1a1aa;
-            cursor: not-allowed;
-            border: none;
-            padding: 1rem;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            text-align: center;
-        }
-        .btn-disabled:hover { 
-            background-color: #3f3f46; 
-            transform: none;
-            box-shadow: none;
+            display: block; width: 100%; text-align: center; text-decoration: none;
+            background: #3f3f46; color: #a1a1aa; padding: 12px; border-radius: 12px;
+            font-weight: 700; font-size: 0.9rem; cursor: not-allowed;
         }
 
+        /* Messages de succès/erreur */
+        .alert { padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; font-weight: 600; font-size: 0.9rem; }
+        .alert-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .alert-success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <div class="header">
-            <h1>Arène des Compétiteurs</h1>
-            <p>Découvrez les événements à venir. Formez votre équipe. Dominez le classement.</p>
-        </div>
-
-        <div class="tournaments-grid">
-            @forelse($tournaments as $tournament)
-                @php
-                    $percentage = ($tournament->registered_count / $tournament->max_capacity) * 100;
-                    if($percentage > 100) $percentage = 100;
-                @endphp
-
-                <div class="card">
-                    <span class="badge-category">{{ $tournament->category->name }}</span>
-                    
-                    <div class="card-game">{{ $tournament->game->name }}</div>
-                    <h2 class="card-title">{{ $tournament->title }}</h2>
-                    
-                    <div class="card-details">
-                        <div class="detail-row">
-                            <span class="detail-icon">📅</span> 
-                            {{ $tournament->event_date->format('d M Y - H:i') }}
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-icon">👑</span> 
-                            Org: {{ $tournament->organizer->username }}
-                        </div>
-
-                        <div class="quota-bar">
-                            <div class="quota-fill {{ $tournament->is_full ? 'full' : '' }}" style="width: {{ $percentage }}%;"></div>
-                        </div>
-                        <div class="quota-text">
-                            <span>Places prises: {{ $tournament->registered_count }}</span>
-                            <span>Max: {{ $tournament->max_capacity }}</span>
-                        </div>
-                    </div>
-
-                    @if($tournament->can_register)
-                        <a href="{{ route('competitor.teams.create', $tournament->id) }}" class="btn-join">Créer une équipe & Rejoindre</a>
-                    @else
-                        <button class="btn-join btn-disabled" disabled>
-                            {{ $tournament->is_full ? 'Tournoi Complet' : 'Inscriptions Fermées' }}
-                        </button>
-                    @endif
-
-                </div>
-            @empty
-                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-gray); padding: 3rem; background: var(--bg-card); border-radius: 20px;">
-                    <h2>Aucun tournoi disponible pour le moment...</h2>
-                    <p>Les organisateurs préparent l'arène. Revenez plus tard !</p>
-                </div>
-            @endforelse
-        </div>
-
+<div class="container">
+    <div class="header-section">
+        <h1>L'Arène</h1>
+        <p>Rejoignez les meilleurs tournois de YouCode</p>
     </div>
+
+    @if(session('error')) <div class="alert alert-error">{{ session('error') }}</div> @endif
+    @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
+
+    <div class="filters">
+        <a href="{{ route('competitor.tournaments.index', ['filter' => 'all']) }}" 
+           class="filter-btn {{ $currentFilter == 'all' ? 'active' : '' }}">Tous</a>
+           
+        <a href="{{ route('competitor.tournaments.index', ['filter' => 'ouvertes']) }}" 
+           class="filter-btn {{ $currentFilter == 'ouvertes' ? 'active' : '' }}">Ouvertes (Places dispo)</a>
+           
+        <a href="{{ route('competitor.tournaments.index', ['filter' => 'a_venir']) }}" 
+           class="filter-btn {{ $currentFilter == 'a_venir' ? 'active' : '' }}">À venir</a>
+           
+        <a href="{{ route('competitor.tournaments.index', ['filter' => 'terminees']) }}" 
+           class="filter-btn {{ $currentFilter == 'terminees' ? 'active' : '' }}">Terminées</a>
+    </div>
+
+    <div class="tournament-grid">
+        @forelse($tournaments as $tournament)
+            <div class="t-card">
+                <div>
+                    <div class="t-header">
+                        <span class="t-game">{{ $tournament->game->name ?? 'Jeu Inconnu' }}</span>
+                        <span class="t-status">{{ $tournament->status }}</span>
+                    </div>
+                    <h3 class="t-title">{{ $tournament->title }}</h3>
+                    
+                    <div class="t-info">
+                        <span>📅 {{ \Carbon\Carbon::parse($tournament->event_date)->format('d M. Y - H:i') }}</span>
+                        <span>👥 {{ $tournament->teams_count ?? 0 }} / {{ $tournament->max_capacity }} places</span>
+                    </div>
+                </div>
+
+                @if($tournament->status == 'À venir' && ($tournament->teams_count ?? 0) < $tournament->max_capacity)
+                    <a href="{{ route('competitor.teams.create', $tournament->id) }}" class="btn-join">Créer une équipe & Rejoindre</a>
+                @else
+                    <div class="btn-disabled">Inscriptions Fermées</div>
+                @endif
+            </div>
+        @empty
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--gray); padding: 3rem;">
+                <p>Aucun tournoi ne correspond à ce filtre pour le moment.</p>
+            </div>
+        @endforelse
+    </div>
+</div>
 
 </body>
 </html>

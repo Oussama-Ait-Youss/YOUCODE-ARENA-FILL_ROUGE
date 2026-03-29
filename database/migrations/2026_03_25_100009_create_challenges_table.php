@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('tournament_id')->constrained('tournaments')->cascadeOnDelete();
             $table->foreignId('team1_id')->constrained('teams');
             $table->foreignId('team2_id')->constrained('teams');
-            $table->string('status', 50);
+            $table->string('status');
             $table->dateTime('scheduled_for');
             $table->timestamps();
         });
