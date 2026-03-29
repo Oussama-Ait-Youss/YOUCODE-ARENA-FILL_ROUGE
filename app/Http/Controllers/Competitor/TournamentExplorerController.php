@@ -8,14 +8,29 @@ use Illuminate\Http\Request;
 
 class TournamentExplorerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tournaments = Tournament::with(['game', 'category', 'organizer'])
-            ->whereIn('status', ['À venir', 'Ouvertes'])
-            ->where('event_date', '>', now())
-            ->orderBy('event_date', 'asc')
-            ->get();
+        $currentFilter = $request->query('filter', 'all');
 
-        return view('competitor.tournaments.index', compact('tournaments'));
+        $query = Tournament::with(['game', 'category'])
+                           ->withCount('teams');
+
+        switch ($currentFilter) {
+            case 'ouvertes':
+                
+                $query->where('status', 'À venir')
+                      ->havingRaw('teams_count < max_capacity');
+                break;
+            case 'a_venir':
+                $query->where('status', 'À venir');
+                break;
+            case 'terminees':
+                $query->where('status', 'Terminé');
+                break;
+        }
+
+        $tournaments = $query->latest()->get();
+
+        return view('competitor.tournaments.index', compact('tournaments', 'currentFilter'));
     }
 }
