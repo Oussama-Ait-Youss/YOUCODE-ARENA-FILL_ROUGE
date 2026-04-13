@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->contrained('users')->cascadeOnDelete();
             $table->foreignId('tournament_id')->contrained('tournaments')->cascadeOnDelete();
             $table->dateTime('registration_date')->useCurrent();
-            $table->string('status,50');
+            $table->string('status');
             $table->timestamps();
         });
     }

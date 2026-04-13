@@ -10,17 +10,23 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('matches', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('challenge_id')->constrained('challenges')->cascadeOnDelete();
-            $table->foreignId('tournament_id')->constrained('tournaments')->cascadeOnDelete();
-            $table->foreignId('winner_team_id')->nullable()->constrained('teams'); // Nullable in case of a draw or if not played yet
-            $table->string('score', 50)->nullable();
-            $table->dateTime('played_at')->nullable();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('matches', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('tournament_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('challenge_id')->nullable()->constrained()->cascadeOnDelete(); 
+
+        $table->foreignId('team1_id')->constrained('teams')->cascadeOnDelete();
+        $table->foreignId('team2_id')->constrained('teams')->cascadeOnDelete();
+
+        $table->foreignId('winner_team_id')->nullable()->constrained('teams');
+        $table->string('score', 50)->nullable(); 
+        
+        $table->string('status')->default('Programmé'); 
+        $table->dateTime('played_at')->nullable();
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.

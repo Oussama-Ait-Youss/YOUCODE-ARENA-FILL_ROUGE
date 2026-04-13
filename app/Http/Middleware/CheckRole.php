@@ -20,6 +20,12 @@ class CheckRole
         if (!Auth::check()) {
             return redirect('login');
         }
+        if (Auth::user()->hasRole('Admin')) {
+            return $next($request);
+        }
+        if ($role === 'Compétiteur' && Auth::user()->hasRole('Organisateur')) {
+            return $next($request);
+        }
 
         if (!Auth::user()->hasRole($role)) {
             

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('game_id')->constrained('games');
             $table->foreignId('category_id')->constrained('categories');
             $table->string('title');
-            $table->string('status',50);
+            $table->string('status');
             $table->integer('max_capacity');
             $table->dateTime('event_date');
             $table->timestamps();
