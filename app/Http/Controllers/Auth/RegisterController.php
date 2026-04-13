@@ -37,11 +37,17 @@ class RegisterController extends Controller
             'is_banned' => false,
         ]);
 
-        // Trigger Laravel events if required
-        // event(new \Illuminate\Auth\Events\Registered($user));
+       
+        $competitorRole = \App\Models\Role::where('name', 'Compétiteur')->first();
+        if ($competitorRole) {
+            $user->roles()->attach($competitorRole->id);
+        }
+
+        
 
         Auth::login($user);
 
-        return redirect('/');
+       
+        return redirect()->route('dashboard'); 
     }
 }

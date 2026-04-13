@@ -33,4 +33,16 @@ class TournamentExplorerController extends Controller
 
         return view('competitor.tournaments.index', compact('tournaments', 'currentFilter'));
     }
+    public function show($id)
+{
+    // On récupère le tournoi avec son jeu et ses équipes (participants)
+    $tournament = \App\Models\Tournament::with(['game', 'teams.members'])->findOrFail($id);
+    
+    // On vérifie si l'utilisateur connecté fait déjà partie d'une équipe de ce tournoi
+    $isRegistered = $tournament->teams()->whereHas('members', function($q) {
+        $q->where('user_id', auth()->id());
+    })->exists();
+
+    return view('competitor.tournaments.show', compact('tournament', 'isRegistered'));
+}
 }

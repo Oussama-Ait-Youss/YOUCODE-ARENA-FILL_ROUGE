@@ -14,15 +14,22 @@ class TeamController extends Controller
 
 {
         public function index()
-    {
-    
-        $registrations = Registration::with(['tournament.teams', 'tournament.game'])
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->get();
+{
+    $user = auth()->user();
 
-        return view('competitor.teams.index', compact('registrations'));
-    }
+    
+    $registrations = Registration::with(['tournament.game'])
+        ->where('user_id', $user->id)
+        ->latest()
+        ->get();
+
+    $stats = [
+        'total_tournaments' => $registrations->where('status', 'Confirmé')->count(),
+        'pending_invitations' => $registrations->where('status', 'En attente')->count(),
+    ];
+
+    return view('competitor.teams.index', compact('registrations', 'stats', 'user'));
+}
    public function create(Tournament $tournament)
 {
     $tournament->load('game');

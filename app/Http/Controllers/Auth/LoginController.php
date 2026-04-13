@@ -37,8 +37,9 @@ class LoginController extends Controller
                 ])->onlyInput('email');
             }
 
-            return redirect()->intended('/');
-        }
+                return redirect()->route('dashboard');        
+
+            }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
@@ -52,6 +53,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect('/');
     }
 }

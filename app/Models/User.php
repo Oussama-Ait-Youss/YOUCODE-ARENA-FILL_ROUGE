@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Role;
+use App\Models\CompetitorProfile;
 
 class User extends Authenticatable
 {
@@ -64,5 +65,23 @@ class User extends Authenticatable
     public function hasRole(string $roleName): bool
     {
         return $this->roles()->where('name', $roleName)->exists();
+    }
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id');
+    }
+
+    public function competitorProfile()
+    {
+        return $this->hasOne(CompetitorProfile::class);
+    }
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'author_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'author_id');
     }
 }
