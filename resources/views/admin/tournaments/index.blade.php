@@ -1,99 +1,131 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modération des Tournois - God Mode</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
-        :root { --bg: #0b0b0e; --card: #16161a; --admin-accent: #dc2626; --gold: #fbbf24; --gray: #9ca3af; --border: #27272a; --text: #f3f4f6; }
-        
-        body { background: var(--bg); font-family: 'Poppins', sans-serif; color: var(--text); margin: 0; padding: 2rem 1rem; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        a { text-decoration: none; color: var(--gray); font-weight: 600; transition: color 0.2s;}
-        a:hover { color: white; }
-        
-        .header { margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
-        .title { font-size: 2.5rem; color: var(--admin-accent); margin: 0; font-weight: 900; text-transform: uppercase; }
-        
-        /* Table Styles */
-        .table-container { overflow-x: auto; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 15px 20px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { background: rgba(220, 38, 38, 0.05); color: var(--admin-accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;}
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background: rgba(255, 255, 255, 0.02); }
-        
-        .status-badge { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
-        .status-open { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .status-closed { background: rgba(220, 38, 38, 0.15); color: var(--admin-accent); }
-        
-        /* Buttons */
-        .btn-danger { background: rgba(220, 38, 38, 0.1); color: var(--admin-accent); border: 1px solid var(--admin-accent); padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-danger:hover { background: var(--admin-accent); color: white; }
-        
-        .alert-success { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; }
-        .empty-state { text-align: center; padding: 3rem; color: var(--gray); font-style: italic; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div style="margin-bottom: 20px;">
-            <a href="{{ route('admin.dashboard') }}">← Retour au Centre de Commandement</a>
+@extends('admin.layout')
+
+@section('title', 'Tournois')
+@section('eyebrow', 'Administration')
+@section('page-title', 'Supervision des tournois')
+@section('page-description', 'Modération globale, filtres, accès rapide aux écrans de gestion et suppression sécurisée.')
+@section('active-tab', 'tournaments')
+
+@section('content')
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-5 border-t-4 border-t-cyan">
+            <div class="text-xs uppercase tracking-[0.25em] text-gray-500 mb-1">Total</div>
+            <div class="text-4xl font-display text-white">{{ $tournamentStats['total'] }}</div>
         </div>
-
-        <div class="header">
-            <h1 class="title">⚔️ Modération des Tournois</h1>
-            <p style="color: var(--gray);">Supervision globale de tous les événements créés sur YouCode Arena.</p>
+        <div class="glass-card p-5 border-t-4 border-t-success">
+            <div class="text-xs uppercase tracking-[0.25em] text-gray-500 mb-1">Ouverts</div>
+            <div class="text-4xl font-display text-white">{{ $tournamentStats['open'] }}</div>
         </div>
+        <div class="glass-card p-5 border-t-4 border-t-warning">
+            <div class="text-xs uppercase tracking-[0.25em] text-gray-500 mb-1">À venir</div>
+            <div class="text-4xl font-display text-white">{{ $tournamentStats['upcoming'] }}</div>
+        </div>
+        <div class="glass-card p-5 border-t-4 border-t-gold">
+            <div class="text-xs uppercase tracking-[0.25em] text-gray-500 mb-1">Terminés</div>
+            <div class="text-4xl font-display text-white">{{ $tournamentStats['completed'] }}</div>
+        </div>
+    </div>
 
-        @if(session('success'))
-            <div class="alert-success">✅ {{ session('success') }}</div>
-        @endif
+    <div class="mb-6 flex justify-end">
+        <a href="{{ route('admin.tournaments.create') }}" class="rounded-xl bg-cyan hover:bg-[#00d7e6] text-black px-5 py-3 font-bold transition">
+            Nouveau tournoi
+        </a>
+    </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Titre du Tournoi</th>
-                        <th>Jeu</th>
-                        <th>Organisateur</th>
-                        <th>Statut</th>
-                        <th>Date prévue</th>
-                        <th>Action (God Mode)</th>
+    <section class="glass-card p-6 mb-6">
+        <form method="GET" action="{{ route('admin.tournaments.index') }}" class="grid grid-cols-1 md:grid-cols-[2fr_1fr_160px_auto] gap-4">
+            <div>
+                <label class="block text-xs uppercase tracking-[0.25em] text-gray-500 mb-2">Recherche</label>
+                <input type="text" name="q" value="{{ $search }}" placeholder="Titre, jeu ou organisateur" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-[0.25em] text-gray-500 mb-2">Statut</label>
+                <select name="status" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white">
+                    <option value="">Tous</option>
+                    @foreach(['Ouvert', 'Fermé', 'À venir', 'Terminé'] as $option)
+                        <option value="{{ $option }}" @selected($status === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-[0.25em] text-gray-500 mb-2">Par page</label>
+                <select name="per_page" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white">
+                    @foreach([10, 25, 50] as $option)
+                        <option value="{{ $option }}" @selected($perPage === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex items-end gap-3">
+                <button type="submit" class="rounded-xl bg-cyan hover:bg-[#00d7e6] text-black px-5 py-3 font-bold transition">Filtrer</button>
+                <a href="{{ route('admin.tournaments.index') }}" class="rounded-xl border border-white/10 px-5 py-3 font-bold text-gray-300 hover:text-white hover:bg-white/5 transition">Reset</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="glass-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[1150px] text-sm">
+                <thead class="bg-black/20">
+                    <tr class="text-left text-xs uppercase tracking-[0.25em] text-gray-500">
+                        <th class="px-5 py-4">Tournoi</th>
+                        <th class="px-5 py-4">Jeu</th>
+                        <th class="px-5 py-4">Organisateur</th>
+                        <th class="px-5 py-4">Participants</th>
+                        <th class="px-5 py-4">Statut</th>
+                        <th class="px-5 py-4">Date</th>
+                        <th class="px-5 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($tournaments as $tournament)
-                    <tr>
-                        <td style="font-weight: 800; color: white;">{{ $tournament->title }}</td>
-                        <td style="color: var(--gold);">{{ $tournament->game->name ?? 'Jeu inconnu' }}</td>
-                        <td style="color: var(--gray);">{{ $tournament->organizer->username ?? 'Inconnu' }}</td>
-                        <td>
-                            <span class="status-badge {{ $tournament->status === 'Ouvert' ? 'status-open' : 'status-closed' }}">
-                                {{ $tournament->status }}
-                            </span>
-                        </td>
-                        <td style="font-size: 0.9rem; color: var(--gray);">
-                            {{ \Carbon\Carbon::parse($tournament->event_date)->format('d/m/Y H:i') }}
-                        </td>
-                        <td>
-                            <form action="{{ route('admin.tournaments.destroy', $tournament->id) }}" method="POST" onsubmit="return confirm('ALERTE ROUGE : Es-tu sûr de vouloir détruire ce tournoi ? Tous les matchs et équipes associés seront supprimés. Action irréversible.');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-danger">Détruire 💥</button>
-                            </form>
-                        </td>
-                    </tr>
+                        <tr class="border-t border-white/5 hover:bg-white/5 transition">
+                            <td class="px-5 py-4">
+                                <div class="font-bold text-white">{{ $tournament->title }}</div>
+                                <div class="text-xs uppercase tracking-[0.25em] text-gray-600">#{{ $tournament->id }}</div>
+                            </td>
+                            <td class="px-5 py-4 text-gray-300">{{ $tournament->game->name ?? 'Jeu inconnu' }}</td>
+                            <td class="px-5 py-4 text-gray-300">{{ $tournament->organizer->username ?? 'Non assigné' }}</td>
+                            <td class="px-5 py-4 text-gray-300">{{ $tournament->confirmed_registrations_count }}/{{ $tournament->max_capacity }}</td>
+                            <td class="px-5 py-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold {{ $tournament->status === 'Ouvert' ? 'bg-success/10 text-success' : ($tournament->status === 'Terminé' ? 'bg-gold/10 text-gold' : 'bg-white/5 text-gray-300') }}">
+                                    {{ $tournament->status }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 text-gray-400">{{ $tournament->event_date->format('d/m/Y H:i') }}</td>
+                            <td class="px-5 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ route('admin.tournaments.edit', $tournament) }}" class="rounded-xl border border-cyan/20 bg-cyan/10 px-4 py-2 font-bold text-cyan hover:bg-cyan hover:text-black transition">
+                                        Modifier
+                                    </a>
+                                    <a href="{{ route('organizer.matches.index', $tournament) }}" class="rounded-xl border border-gold/20 bg-gold/10 px-4 py-2 font-bold text-gold hover:bg-gold hover:text-black transition">
+                                        Arbre & matchs
+                                    </a>
+                                    <form action="{{ route('admin.tournaments.destroy', $tournament) }}" method="POST" onsubmit="return confirm('Supprimer définitivement {{ $tournament->title }} ?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="rounded-xl border border-crimson/30 bg-crimson/10 px-4 py-2 font-bold text-crimson hover:bg-crimson hover:text-white transition">
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="6" class="empty-state">Aucun tournoi n'a été créé pour le moment sur la plateforme.</td>
-                    </tr>
+                        <tr>
+                            <td colspan="7" class="px-5 py-10 text-center text-gray-500">Aucun tournoi ne correspond aux filtres.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
-</body>
-</html>
+
+        <div class="px-5 py-4 border-t border-white/5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="text-sm text-gray-500">
+                Affichage de {{ $tournaments->firstItem() ?? 0 }} à {{ $tournaments->lastItem() ?? 0 }} sur {{ $tournaments->total() }} tournois
+            </div>
+            <div>
+                {{ $tournaments->links() }}
+            </div>
+        </div>
+    </section>
+@endsection
