@@ -1,443 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouCodeArena — Register Preview</title>
+    <title>Inscription - YouCode Arena</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#050505',
+                        crimson: '#DC143C',
+                        cyan: '#00F0FF',
+                        gold: '#FFD700',
+                    },
+                    fontFamily: {
+                        display: ['Teko', 'sans-serif'],
+                        sans: ['Outfit', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px rgba(220, 20, 60, 0.5)',
+                        'cyan-glow': '0 0 15px rgba(0, 240, 255, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
-
-:root {
-    --bg-page: #f0f0f0;
-    --bg-white: #ffffff;
-    --bg-input: #f2f3f5;
-    --text-black: #111111;
-    --text-gray: #6b7280;
-    --accent-orange: #f97316;
-    --border-light: #e5e7eb;
-}
-
-* { box-sizing: border-box; }
-
-body {
-    background-color: var(--bg-page);
-    font-family: 'Poppins', sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: -60px; right: -60px;
-    width: 200px; height: 200px;
-    background: var(--accent-orange);
-    border-radius: 50%;
-    opacity: 0.25; z-index: 0;
-}
-body::after {
-    content: '';
-    position: fixed;
-    bottom: -80px; left: -80px;
-    width: 260px; height: 260px;
-    background: var(--accent-orange);
-    border-radius: 50%;
-    opacity: 0.20; z-index: 0;
-}
-
-.auth-container::before {
-    content: '✳';
-    position: fixed;
-    bottom: 3.5rem; left: 2.5rem;
-    font-size: 2.8rem;
-    color: var(--accent-orange);
-    opacity: 0.55;
-    z-index: 0; line-height: 1;
-}
-
-.auth-container {
-    display: flex;
-    width: 100%;
-    max-width: 1000px;
-    border-radius: 28px;
-    box-shadow: 0 30px 70px -15px rgba(0,0,0,0.18);
-    overflow: hidden;
-    position: relative;
-    z-index: 1;
-}
-
-/* ── LEFT ── */
-.auth-form-section {
-    flex: 1;
-    background-color: var(--bg-white);
-    border-radius: 28px 0 0 28px;
-    padding: 2rem 3rem 2.5rem 3rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.auth-top-nav-left {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.75rem;
-}
-
-.logo-text {
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--text-black);
-    letter-spacing: -0.5px;
-}
-
-.lang-selector {
-    border: 1px solid var(--border-light);
-    padding: 0.35rem 0.9rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-black);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    cursor: pointer;
-}
-
-.auth-header h1 {
-    font-size: 2.4rem;
-    font-weight: 900;
-    color: var(--text-black);
-    margin: 0 0 0.3rem 0;
-    letter-spacing: -1.5px;
-    line-height: 1.1;
-}
-
-.auth-header p {
-    color: var(--text-gray);
-    font-size: 0.85rem;
-    margin: 0 0 1.5rem 0;
-    font-weight: 400;
-}
-
-.form-group { margin-bottom: 0.85rem; }
-
-.form-group input {
-    width: 100%;
-    background-color: var(--bg-input);
-    border: 2px solid transparent;
-    color: var(--text-black);
-    padding: 0.95rem 1.4rem;
-    border-radius: 50px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.88rem;
-    transition: all 0.25s ease;
-}
-
-.form-group input::placeholder { color: #adb5bd; font-weight: 400; }
-.form-group input:focus {
-    outline: none;
-    border-color: var(--accent-orange);
-    background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(249,115,22,0.10);
-}
-
-.btn-submit {
-    width: 100%;
-    background-color: var(--text-black);
-    color: var(--bg-white);
-    border: none;
-    padding: 1rem;
-    border-radius: 50px;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 700;
-    font-size: 0.92rem;
-    cursor: pointer;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    transition: all 0.2s ease;
-    margin-top: 0.5rem;
-}
-.btn-submit:hover {
-    background-color: #1a1a1a;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.20);
-}
-
-.auth-footer {
-    text-align: center;
-    margin-top: 1.25rem;
-    font-size: 0.80rem;
-    color: var(--text-gray);
-}
-.auth-footer a { color: var(--accent-orange); font-weight: 700; text-decoration: none; }
-.auth-footer a:hover { text-decoration: underline; }
-
-.alert { padding: 0.9rem 1.25rem; border-radius: 16px; margin-bottom: 1rem; font-size: 0.82rem; }
-.alert-error { background-color: #fee2e2; color: #991b1b; }
-.alert-error ul { margin: 0; padding-left: 1.5rem; }
-
-/* Terms note */
-.terms-note {
-    font-size: 0.75rem;
-    color: var(--text-gray);
-    text-align: center;
-    margin-top: 0.75rem;
-    line-height: 1.5;
-}
-.terms-note a { color: var(--accent-orange); font-weight: 600; text-decoration: none; }
-.terms-note a:hover { text-decoration: underline; }
-
-/* Step indicators */
-.step-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-}
-.step {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 700;
-}
-.step.active {
-    background-color: var(--accent-orange);
-    color: #fff;
-}
-.step.inactive {
-    background-color: var(--bg-input);
-    color: var(--text-gray);
-}
-.step-line {
-    flex: 1;
-    height: 2px;
-    background-color: var(--border-light);
-    border-radius: 2px;
-}
-.step-line.done { background-color: var(--accent-orange); }
-
-/* ── RIGHT ── */
-.auth-graphic {
-    flex: 1.05;
-    background: linear-gradient(145deg, #fb923c 0%, #f97316 40%, #ea580c 100%);
-    border-radius: 0 28px 28px 0;
-    padding: 2rem 2rem 0 2rem;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 540px;
-}
-
-.auth-graphic::before {
-    content: '';
-    position: absolute;
-    bottom: -10%; left: 50%;
-    transform: translateX(-50%);
-    width: 340px; height: 340px;
-    background: rgba(255,255,255,0.10);
-    border-radius: 50%;
-    z-index: 1;
-}
-
-/* Floating perks cards on the right panel */
-.perk-card {
-    position: absolute;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 14px;
-    padding: 0.6rem 1rem;
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 10;
-    white-space: nowrap;
-}
-.perk-card .perk-icon { font-size: 1rem; }
-.perk-card-1 { top: 6.5rem; left: 2rem; }
-.perk-card-2 { top: 10rem; right: 1.5rem; }
-.perk-card-3 { bottom: 12rem; left: 2rem; }
-
-.auth-top-nav-right {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1.25rem;
-    z-index: 10;
-    position: relative;
-}
-
-.auth-top-nav-right a {
-    color: rgba(255,255,255,0.85);
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 600;
-}
-
-.btn-join {
-    border: 1.5px solid rgba(255,255,255,0.7);
-    padding: 0.45rem 1.3rem;
-    border-radius: 50px;
-    color: #fff !important;
-    transition: all 0.25s ease;
-}
-.btn-join:hover { background-color: rgba(255,255,255,0.2); }
-
-.community-badge {
-    position: absolute;
-    top: 5.5rem; left: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    color: #fff;
-    z-index: 10;
-}
-.community-icon {
-    width: 38px; height: 38px;
-    background-color: rgba(255,255,255,0.95);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.community-text { font-size: 0.78rem; font-weight: 700; line-height: 1.3; }
-
-.character-showcase {
-    position: absolute;
-    bottom: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 85%; height: 72%;
-    background-position: bottom center;
-    background-size: contain;
-    background-repeat: no-repeat;
-    z-index: 5;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-}
-
-/* Right panel tagline */
-.graphic-tagline {
-    position: absolute;
-    bottom: 2rem;
-    left: 0; right: 0;
-    text-align: center;
-    z-index: 10;
-    color: rgba(255,255,255,0.7);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-@media (max-width: 860px) {
-    .auth-container { flex-direction: column; max-width: 480px; }
-    .auth-form-section { border-radius: 28px; padding: 2rem; }
-    .auth-graphic { display: none; }
-    body::before, body::after { display: none; }
-}
+        body {
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(220, 20, 60, 0.08) 0%, transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.05) 0%, transparent 25%);
+        }
+        .glass-card {
+            background: linear-gradient(145deg, rgba(20, 25, 35, 0.7), rgba(10, 12, 18, 0.8));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
     </style>
 </head>
-<body>
-    <div class="auth-container">
+<body class="text-gray-200 font-sans min-h-screen relative selection:bg-cyan selection:text-black flex items-center justify-center p-4 md:p-8">
 
-        <!-- LEFT: Register Form -->
-        <div class="auth-form-section">
-            <div class="auth-top-nav-left">
-                <div class="logo-text">YCA.</div>
-                <div class="lang-selector"><span>🇲🇦</span> EN <span>⌄</span></div>
+    <div class="fixed inset-0 z-0 opacity-20 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');"></div>
+
+    <div class="glass-card relative z-10 w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden border-t-2 border-t-cyan">
+        
+        <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative z-20 bg-black/20">
+            
+            <div class="flex justify-between items-center mb-6">
+                <div class="font-display font-bold text-3xl text-white tracking-widest flex items-center gap-1">
+                    <span class="text-cyan">Y</span>CA.
+                </div>
+                <div class="bg-black/50 border border-white/10 px-3 py-1 rounded-full text-xs font-bold text-gray-400 flex items-center gap-2 cursor-pointer hover:text-white transition">
+                    <span>🇲🇦</span> EN <span class="text-[10px]">▼</span>
+                </div>
             </div>
 
-            <!-- Step indicator -->
-            <div class="step-indicator">
-                <div class="step active">1</div>
-                <div class="step-line done"></div>
-                <div class="step active">2</div>
-                <div class="step-line"></div>
-                <div class="step inactive">3</div>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 rounded-full bg-cyan text-black font-bold flex items-center justify-center text-sm shadow-cyan-glow">1</div>
+                <div class="flex-1 h-1 bg-cyan rounded-full shadow-cyan-glow"></div>
+                <div class="w-8 h-8 rounded-full bg-cyan text-black font-bold flex items-center justify-center text-sm shadow-cyan-glow">2</div>
+                <div class="flex-1 h-1 bg-white/10 rounded-full"></div>
+                <div class="w-8 h-8 rounded-full bg-black border border-white/20 text-gray-500 font-bold flex items-center justify-center text-sm">3</div>
             </div>
 
-            <div class="auth-header">
-                <h1>Join the Arena</h1>
-                <p>Create your competitor profile today.</p>
+            <div class="mb-6">
+                <h1 class="font-display font-bold text-4xl text-white tracking-wider uppercase mb-1">Join the Arena</h1>
+                <p class="text-gray-400 text-sm font-medium">Create your competitor profile today.</p>
             </div>
 
-           <form method="POST" action="{{ route('register') }}">
+            <form method="POST" action="{{ route('register') }}" class="flex flex-col gap-4">
                 @csrf 
-
-                <div class="form-group">
-                    <input type="text" name="username" value="{{ old('username') }}" required autofocus placeholder="Your gamertag / username" />
+                <div>
+                    <input type="text" name="username" value="{{ old('username') }}" required autofocus placeholder="Your gamertag / username" 
+                           class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors font-sans">
                 </div>
-                <div class="form-group">
-                    <input type="email" name="email" value="{{ old('email') }}" required placeholder="Your email address" />
+                <div>
+                    <input type="email" name="email" value="{{ old('email') }}" required placeholder="Your email address" 
+                           class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors font-sans">
                 </div>
-                <div class="form-group">
-                    <input type="password" name="password" required placeholder="Create password" />
+                <div>
+                    <input type="password" name="password" required placeholder="Create password" 
+                           class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors font-sans">
                 </div>
-                <div class="form-group" style="margin-bottom: 1.25rem;">
-                    <input type="password" name="password_confirmation" required placeholder="Confirm password" />
+                <div>
+                    <input type="password" name="password_confirmation" required placeholder="Confirm password" 
+                           class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors font-sans">
                 </div>
                 
-                <button type="submit" class="btn-submit">Sign up</button>
+                <button type="submit" class="w-full bg-cyan hover:bg-[#00d7e6] text-black font-display font-bold text-2xl tracking-widest uppercase py-3 rounded-lg transition shadow-cyan-glow mt-2">
+                    Sign up
+                </button>
             </form>
 
-            <div class="terms-note">
-                By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            <div class="text-center mt-4 text-xs text-gray-500">
+                By signing up you agree to our <a href="#" class="text-cyan hover:underline">Terms of Service</a> and <a href="#" class="text-cyan hover:underline">Privacy Policy</a>
             </div>
 
-            <div class="auth-footer">
-                Already have an account? <a href="{{route('login')}}">Log in</a>
+            <div class="text-center mt-6 text-sm text-gray-400">
+                Already have an account? <a href="{{ route('login') }}" class="text-white font-bold hover:text-cyan transition">Log in</a>
             </div>
         </div>
 
-        <!-- RIGHT: Graphic -->
-        <div class="auth-graphic">
-            <div class="auth-top-nav-right">
-                <a href="#">Sign In</a>
-                <a href="#" class="btn-join">Join Us</a>
+        <div class="hidden md:flex w-1/2 relative flex-col items-center justify-end p-8 border-l border-white/5 bg-gradient-to-br from-black/50 to-cyan/10 overflow-hidden">
+            
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 z-0"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan rounded-full blur-[100px] opacity-10"></div>
+
+            <div class="absolute top-8 right-8 z-10 flex gap-4">
+                <a href="{{ route('login') }}" class="text-white/70 hover:text-white text-sm font-bold transition">Sign In</a>
+                <a href="#" class="text-crimson border border-crimson/50 hover:bg-crimson hover:text-white px-4 py-1 rounded-full text-sm font-bold transition shadow-neon">Join Us</a>
             </div>
 
-            <div class="community-badge">
-                <div class="community-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#f97316">
-                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                    </svg>
-                </div>
-                <div class="community-text">YouCode Arena<br>Competitors</div>
+            <div class="absolute top-24 left-8 z-10 flex items-center gap-3 bg-black/40 border border-white/10 backdrop-blur-md px-4 py-2 rounded-xl">
+                <span class="text-2xl">🎮</span>
+                <div class="text-xs font-bold text-white uppercase tracking-wider leading-tight">YouCode Arena<br><span class="text-cyan">Competitors</span></div>
             </div>
 
-            <!-- Floating perk cards -->
-            <div class="perk-card perk-card-1"><span class="perk-icon">🏆</span> 500+ Challenges</div>
-            <div class="perk-card perk-card-2"><span class="perk-icon">⚡</span> Live Tournaments</div>
-            <div class="perk-card perk-card-3"><span class="perk-icon">🎯</span> Track Your Rank</div>
+            <div class="absolute top-32 right-8 z-10 bg-white/5 border border-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-2"><span class="text-gold">🏆</span> 500+ Challenges</div>
+            <div class="absolute bottom-40 left-12 z-10 bg-white/5 border border-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-2"><span class="text-cyan">⚡</span> Live Tournaments</div>
 
-            <!-- Character placeholder -->
-            <div class="character-showcase">
-                <svg viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg" style="opacity:0.18; width:80%; height:100%;">
-                    <ellipse cx="150" cy="330" rx="75" ry="16" fill="rgba(0,0,0,0.3)"/>
-                    <rect x="110" y="205" width="80" height="125" rx="20" fill="white"/>
-                    <circle cx="150" cy="168" r="48" fill="white"/>
-                    <rect x="70" y="215" width="34" height="88" rx="17" fill="white"/>
-                    <rect x="196" y="215" width="34" height="88" rx="17" fill="white"/>
-                    <rect x="116" y="295" width="27" height="65" rx="13" fill="white"/>
-                    <rect x="157" y="295" width="27" height="65" rx="13" fill="white"/>
-                    <rect x="120" y="152" width="78" height="26" rx="13" fill="rgba(0,0,0,0.45)"/>
-                    <circle cx="138" cy="165" r="9" fill="rgba(100,200,255,0.55)"/>
-                    <circle cx="162" cy="165" r="9" fill="rgba(100,200,255,0.55)"/>
+            <div class="relative z-10 w-4/5 text-center mb-8 mt-12">
+                <svg viewBox="0 0 320 380" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto opacity-20 mix-blend-screen drop-shadow-2xl">
+                    <rect x="120" y="220" width="80" height="120" rx="20" fill="none" stroke="white" stroke-width="4"/>
+                    <circle cx="160" cy="180" r="50" fill="none" stroke="white" stroke-width="4"/>
+                    <rect x="80" y="230" width="35" height="90" rx="17" fill="none" stroke="white" stroke-width="4"/>
+                    <rect x="205" y="230" width="35" height="90" rx="17" fill="none" stroke="white" stroke-width="4"/>
+                    <rect x="130" y="165" width="80" height="28" rx="14" fill="white"/>
+                    <circle cx="148" cy="179" r="10" fill="#050505"/>
+                    <circle cx="172" cy="179" r="10" fill="#050505"/>
                 </svg>
+                <div class="font-display font-bold text-xl text-gray-500 tracking-[0.2em] uppercase mt-4">Code. Compete. Conquer.</div>
             </div>
-
-            <div class="graphic-tagline">Code. Compete. Conquer.</div>
         </div>
 
     </div>
