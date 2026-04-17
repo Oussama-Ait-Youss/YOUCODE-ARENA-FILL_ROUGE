@@ -46,19 +46,67 @@
 
     <div class="fixed inset-0 z-0 opacity-20 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');"></div>
 
-    <nav class="fixed top-0 w-full z-50 glass border-b border-white/5 h-20 flex justify-between items-center px-6">
-        <a href="{{ route('dashboard') }}" class="text-2xl font-display font-bold text-white tracking-widest">YOUCODE ARENA</a>
-        <div class="hidden md:flex gap-8">
-            <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-white font-display tracking-wider text-lg transition-colors">COMPETITION HUB</a>
-            <a href="{{ route('competitor.tournaments.index') }}" class="text-gray-400 hover:text-white font-display tracking-wider text-lg transition-colors">TOURNAMENTS</a>
-            <a href="{{ route('competitor.profile') }}" class="text-cyan font-display tracking-wider text-lg relative">
-                MON PROFIL
-                <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-cyan shadow-[0_0_10px_rgba(0,240,255,0.5)]"></span>
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            
+            <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+                <div class="w-10 h-10 bg-crimson flex items-center justify-center transform skew-x-[-10deg]">
+                    <span class="font-display font-bold text-black text-2xl transform skew-x-[10deg]">Y</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-2xl font-display font-bold tracking-widest leading-none text-white group-hover:text-crimson transition-colors">YOUCODE</span>
+                    <span class="text-xs font-display tracking-[0.3em] text-gray-500 group-hover:text-white transition-colors">ARENA</span>
+                </div>
             </a>
-        </div>
-        <div class="flex items-center gap-4">
-            <button onclick="document.getElementById('logout-form').submit();" class="text-gray-400 hover:text-crimson font-bold text-sm tracking-widest uppercase transition-colors">Déconnexion</button>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
+
+            <div class="hidden md:flex items-center gap-8">
+                
+                <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-white font-display tracking-wider text-lg transition-colors">
+                    COMPETITION HUB
+                </a>
+                
+                <a href="{{ route('competitor.tournaments.index') }}" class="text-gray-400 hover:text-white font-display tracking-wider text-lg transition-colors">
+                    TOURNAMENTS
+                </a>
+
+                <a href="{{ route('competitor.profile') }}" class="text-white font-display tracking-wider text-lg relative">
+                    MON PROFIL
+                    <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-crimson shadow-neon"></span>
+                </a>
+
+                @if(auth()->user()->hasRole('Organisateur'))
+                    <a href="{{ route('organizer.dashboard') }}" class="text-gold hover:text-white font-display tracking-wider text-lg transition-colors flex items-center gap-1">
+                        👑 MES TOURNOIS
+                    </a>
+                @endif
+
+                @if(auth()->user()->hasRole('Admin'))
+                    <a href="{{ route('admin.dashboard') }}" class="text-cyan hover:text-white font-display tracking-wider text-lg transition-colors flex items-center gap-1">
+                        🛡️ ADMINISTRATION
+                    </a>
+                @endif
+
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="document.getElementById('logout-form').submit();" title="Se déconnecter">
+                    
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-crimson to-violet border-2 border-white/20 relative group-hover:scale-105 transition">
+                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-gray-900"></span>
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->username) }}&background=transparent&color=fff" class="w-full h-full object-cover rounded-full">
+                    </div>
+
+                    <span class="text-gray-400 group-hover:text-crimson font-bold text-sm tracking-widest uppercase transition-colors hidden sm:block">
+                        Déconnexion
+                    </span>
+                    
+                </div>
+                
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                    @csrf
+                </form>
+            </div>
+
         </div>
     </nav>
 
@@ -74,10 +122,10 @@
 
             <div class="text-center md:text-left z-10">
                 <h1 class="text-4xl font-display font-bold text-white tracking-wider uppercase">{{ $user->username }}</h1>
-                <p class="text-cyan font-bold tracking-widest text-sm uppercase mb-4">Compétiteur Confirmé</p>
+                <p class="text-cyan font-bold tracking-widest text-sm uppercase mb-4">{{ $user->primaryRoleName() }}</p>
                 <div class="flex flex-wrap justify-center md:justify-start gap-3">
-                    <span class="bg-white/5 border border-white/10 px-4 py-1 rounded-full text-sm text-gray-300">🎮 Main : Laravel</span>
-                    <span class="bg-white/5 border border-white/10 px-4 py-1 rounded-full text-sm text-gray-300">🛡️ Main : Cybersec</span>
+                    <span class="bg-white/5 border border-white/10 px-4 py-1 rounded-full text-sm text-gray-300">🎮 Victoires : {{ $stats['wins'] }}</span>
+                    <span class="bg-white/5 border border-white/10 px-4 py-1 rounded-full text-sm text-gray-300">🧠 Défaites : {{ $stats['losses'] }}</span>
                 </div>
             </div>
         </div>
@@ -88,21 +136,47 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
             <div class="glass-card p-6 rounded-xl border-t-2 border-t-cyan">
                 <div class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Winrate</div>
-                <div class="text-4xl font-display font-bold text-white">68<span class="text-xl text-cyan">%</span></div>
+                <div class="text-4xl font-display font-bold text-white">{{ $stats['win_rate'] }}<span class="text-xl text-cyan">%</span></div>
             </div>
             <div class="glass-card p-6 rounded-xl border-t-2 border-t-crimson">
                 <div class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Matchs Joués</div>
-                <div class="text-4xl font-display font-bold text-white">24</div>
+                <div class="text-4xl font-display font-bold text-white">{{ $stats['played_matches'] }}</div>
             </div>
             <div class="glass-card p-6 rounded-xl border-t-2 border-t-gold relative overflow-hidden">
                 <div class="absolute -right-4 -bottom-4 text-6xl opacity-10">🏆</div>
-                <div class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Tournois Gagnés</div>
-                <div class="text-4xl font-display font-bold text-gold">2</div>
+                <div class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Tournois Actifs</div>
+                <div class="text-4xl font-display font-bold text-gold">{{ $stats['active_tournaments'] }}</div>
             </div>
             <div class="glass-card p-6 rounded-xl border-t-2 border-t-success">
-                <div class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Défis Complétés</div>
-                <div class="text-4xl font-display font-bold text-white">14<span class="text-xl text-gray-500">/20</span></div>
+                <div class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Challenge Cards</div>
+                <div class="text-4xl font-display font-bold text-white">{{ $stats['challenge_cards'] }}</div>
             </div>
+        </div>
+
+        <h2 class="text-2xl font-display font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
+            <span class="text-gold">🗂️</span> Mes Challenges
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            @forelse($upcomingChallenges as $challenge)
+                @php
+                    $isTeamOne = $user->teams->contains('id', $challenge->team1_id);
+                    $myTeam = $isTeamOne ? $challenge->team1 : $challenge->team2;
+                    $opponent = $isTeamOne ? $challenge->team2 : $challenge->team1;
+                @endphp
+                <div class="glass-card rounded-xl p-6">
+                    <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">{{ $challenge->tournament->title }}</p>
+                    <h3 class="text-2xl font-display font-bold text-white mb-1">{{ $myTeam->name }} <span class="text-crimson">vs</span> {{ $opponent->name }}</h3>
+                    <p class="text-sm text-gray-400 mb-4">{{ optional($challenge->played_at)->format('d/m/Y H:i') ?? 'Horaire à définir' }}</p>
+                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest {{ $challenge->status === 'Terminé' ? 'bg-success/10 text-success' : 'bg-white/5 text-cyan' }}">
+                        {{ $challenge->status }}
+                    </span>
+                </div>
+            @empty
+                <div class="col-span-full border border-dashed border-white/20 rounded-xl p-8 text-center text-gray-500">
+                    Aucun duel planifié pour le moment.
+                </div>
+            @endforelse
         </div>
 
         <h2 class="text-2xl font-display font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
@@ -118,7 +192,7 @@
                             <span class="text-gray-500 text-xs font-bold uppercase">{{ $tournament->status }}</span>
                         </div>
                         <h3 class="text-2xl font-bold text-white mb-2">{{ $tournament->title }}</h3>
-                        <p class="text-gray-400 text-sm mb-6">Prépare ton équipe, le prochain round approche.</p>
+                        <p class="text-gray-400 text-sm mb-6">Prépare ton équipe, surveille ton prochain match et l'avancée de l'arbre.</p>
                     </div>
 
                     <a href="{{ route('competitor.tournaments.show', $tournament->id) }}" class="block w-full text-center bg-white/5 border border-white/10 hover:border-cyan hover:text-cyan text-white font-display tracking-widest px-6 py-3 rounded transition-colors group-hover:bg-cyan/5">

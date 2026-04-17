@@ -71,15 +71,21 @@
         </div>
     @endif
 
-    <div class="post-form-card">
-        <form action="{{ route('competitor.feed.store') }}" method="POST">
-            @csrf
-            <textarea name="content" class="post-textarea" placeholder="Que veux-tu dire à tes adversaires, {{ auth()->user()->username }} ?" required></textarea>
-            <div class="clearfix">
-                <button type="submit" class="btn-submit">Publier</button>
-            </div>
-        </form>
-    </div>
+    @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Organisateur'))
+        <div class="post-form-card">
+            <form action="{{ route('competitor.feed.store') }}" method="POST">
+                @csrf
+                <textarea name="content" class="post-textarea" placeholder="Que veux-tu dire à l'arène, {{ auth()->user()->username }} ?" required></textarea>
+                <div class="clearfix">
+                    <button type="submit" class="btn-submit">Publier</button>
+                </div>
+            </form>
+        </div>
+    @else
+        <div class="post-form-card" style="color: var(--gray);">
+            Les compétiteurs peuvent commenter les annonces, mais seuls les organisateurs et les admins peuvent publier ici.
+        </div>
+    @endif
 
     <div class="feed">
         @forelse($posts as $post)
