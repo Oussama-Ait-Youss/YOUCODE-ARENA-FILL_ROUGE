@@ -37,9 +37,13 @@ class LoginController extends Controller
                 ])->onlyInput('email');
             }
 
-                return redirect()->route('dashboard');        
+            Auth::user()->forceFill([
+                'last_login' => now(),
+            ])->save();
 
-            }
+            return redirect()->route('dashboard');        
+
+        }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
