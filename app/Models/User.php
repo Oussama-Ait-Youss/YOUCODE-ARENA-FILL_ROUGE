@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,13 +53,15 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login' => 'datetime',
+            'is_banned' => 'boolean',
             'password' => 'hashed',
         ];
     }
     public function isBanned(){
         return $this->is_banned;
     }
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
     }
@@ -64,24 +69,49 @@ class User extends Authenticatable
     
     public function hasRole(string $roleName): bool
     {
+        if ($this->relationLoaded('roles')) {
+            return $this->roles->contains('name', $roleName);
+        }
+
         return $this->roles()->where('name', $roleName)->exists();
     }
-    public function teams()
+    public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id');
     }
 
-    public function competitorProfile()
+    public function competitorProfile(): HasOne
     {
         return $this->hasOne(CompetitorProfile::class);
     }
-    public function posts()
+
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'author_id');
     }
 
-    public function comments()
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'author_id');
+    }
+
+    public function primaryRoleName(): string
+    {
+        return $this->roles->pluck('name')->first() ?? 'Compétiteur';
+    }
+
+    public function assignRole(string $roleName, ?int $assignedBy = null): void
+    {
+        $role = Role::where('name', $roleName)->firstOrFail();
+
+        $this->roles()->sync([
+            $role->id => [
+                'assigned_at' => now(),
+                'assigned_by' => $assignedBy,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+        $this->unsetRelation('roles');
     }
 }
