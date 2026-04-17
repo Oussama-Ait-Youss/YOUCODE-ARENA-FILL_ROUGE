@@ -141,6 +141,22 @@
         .clean-round {
             display: flex; flex-direction: column; justify-content: space-around; margin-right: 45px;
         }
+
+        /* Fullscreen styles */
+        #bracket-container:fullscreen {
+            background-color: #f8f9fa; /* Consistent background in fullscreen */
+            padding: 2rem;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #bracket-container:fullscreen .clean-bracket-wrapper {
+            border: none;
+            box-shadow: none;
+            transform: scale(1.4); /* Scaled up for LAN event projection */
+            transform-origin: center center;
+        }
     </style>
 </head>
 
@@ -198,9 +214,15 @@
                     </h1>
                     <p class="text-gray-400 text-sm">Gère tes compétitions, valide les équipes et surveille l'avancée de l'arbre.</p>
                 </div>
-                <button class="bg-gold hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold transition shadow-[0_0_15px_rgba(255,215,0,0.3)]">
-                    + Nouveau Tournoi
-                </button>
+                @if($tournaments->isEmpty())
+                    <a href="{{ route('organizer.tournaments.create') }}" class="bg-gold hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold transition shadow-[0_0_15px_rgba(255,215,0,0.3)] inline-block">
+                        + Nouveau Tournoi
+                    </a>
+                @else
+                    <div class="bg-white/5 border border-white/10 text-gray-500 px-6 py-2 rounded font-bold cursor-not-allowed inline-block" title="Limite atteinte">
+                        🔒 Capacité atteinte (1/1)
+                    </div>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -219,37 +241,68 @@
             </div>
 
             <h2 class="text-2xl font-display font-bold text-white mb-4 border-b border-white/10 pb-2">Mes Compétitions</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                <div class="glass-card p-6 rounded-xl relative overflow-hidden group">
-                    <div class="absolute top-4 right-4 bg-success/20 text-success text-xs px-2 py-1 rounded font-bold uppercase tracking-widest">En cours</div>
-                    <h3 class="text-2xl font-display font-bold text-white mb-1">Winter Cup FIFA</h3>
-                    <p class="text-sm text-gray-400 mb-4 flex items-center gap-2">🎮 FIFA 26</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @forelse($tournaments as $tournament)
+                        <div class="glass-card p-6 rounded-xl relative overflow-hidden group flex flex-col justify-between">
+
+            <div class="absolute top-4 right-4 bg-white/10 text-white text-xs px-2 py-1 rounded font-bold uppercase tracking-widest border border-white/10">
+                {{ $tournament->status }}
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-display font-bold text-white mb-1 pr-16 truncate" title="{{ $tournament->title }}">
+                    {{ $tournament->title }}
+                </h3>
+                <p class="text-sm text-cyan mb-4 flex items-center gap-2 font-bold tracking-wider">
+                    🎮 {{ $tournament->game->name ?? 'Jeu' }}
+                </p>
+                
+                <div class="flex justify-between text-sm border-t border-white/10 py-3 mt-2">
+                    <span class="text-gray-500">Inscrits: 
+                        <span class="{{ ($tournament->registered_count ?? 0) >= $tournament->max_capacity ? 'text-crimson' : 'text-success' }} font-bold">
+                            {{ $tournament->registered_count ?? 0 }}/{{ $tournament->max_capacity }}
+                        </span>
+                    </span>
+                    <span class="text-gray-400 font-bold flex items-center gap-1">
+                        📅 {{ \Carbon\Carbon::parse($tournament->event_date)->format('d M') }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-white/5">
+                
+                <button onclick="openTournamentView('{{ addslashes($tournament->title) }}', '{{ $tournament->id }}')" class="w-full bg-white/5 hover:bg-gold hover:text-black border border-white/10 text-gold font-bold py-2 rounded transition mb-3">
+                    Panneau de Contrôle ⚙️
+                </button>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{{ route('organizer.tournaments.edit', $tournament->id) }}" class="text-center bg-cyan/10 border border-cyan/20 hover:bg-cyan hover:text-black text-cyan text-sm font-bold py-2 rounded transition">
+                        ✏️ Modifier
+                    </a>
                     
-                    <div class="flex justify-between text-sm border-t border-white/10 py-3 mt-2">
-                        <span class="text-gray-500">Inscrits: <span class="text-white font-bold">16/16</span></span>
-                        <span class="text-warning font-bold flex items-center gap-1">⏱️ 2 En attente</span>
-                    </div>
-                    
-                    <button onclick="openTournamentView('Winter Cup FIFA', 'fifa')" class="w-full bg-white/5 hover:bg-gold hover:text-black border border-white/10 text-gold font-bold py-2 rounded transition mt-2">
-                        Panneau de Contrôle ⚙️
-                    </button>
+                    <form action="{{ route('organizer.tournaments.destroy', $tournament->id) }}" method="POST" class="m-0" onsubmit="return confirm('Es-tu sûr de vouloir supprimer définitivement ce tournoi ? Tous les matchs seront perdus.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full text-center bg-crimson/10 border border-crimson/20 hover:bg-crimson hover:text-white text-crimson text-sm font-bold py-2 rounded transition">
+                            🗑️ Supprimer
+                        </button>
+                    </form>
                 </div>
 
-                <div class="glass-card p-6 rounded-xl relative overflow-hidden group">
-                    <div class="absolute top-4 right-4 bg-cyan/20 text-cyan text-xs px-2 py-1 rounded font-bold uppercase tracking-widest">À Venir</div>
-                    <h3 class="text-2xl font-display font-bold text-white mb-1">League of Legends S2</h3>
-                    <p class="text-sm text-gray-400 mb-4 flex items-center gap-2">🎮 LoL</p>
-                    
-                    <div class="flex justify-between text-sm border-t border-white/10 py-3 mt-2">
-                        <span class="text-gray-500">Inscrits: <span class="text-white font-bold">4/8</span></span>
-                        <span class="text-warning font-bold flex items-center gap-1">⏱️ 3 En attente</span>
-                    </div>
-                    
-                    <button onclick="openTournamentView('League of Legends S2', 'lol')" class="w-full bg-white/5 hover:bg-gold hover:text-black border border-white/10 text-gold font-bold py-2 rounded transition mt-2">
-                        Panneau de Contrôle ⚙️
-                    </button>
-                </div>
+            </div>
+        </div>
+    @empty
+        <div class="col-span-full glass-card p-12 rounded-xl text-center border border-dashed border-white/20">
+            <div class="text-4xl mb-4">📭</div>
+            <h3 class="text-xl font-display font-bold text-white mb-2">Aucune compétition active</h3>
+            <p class="text-gray-500 mb-6">Tu n'as pas encore créé de tournoi. C'est le moment de lancer l'arène !</p>
+            <a href="{{ route('organizer.tournaments.create') }}" class="inline-block bg-gold hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold transition shadow-[0_0_15px_rgba(255,215,0,0.3)]">
+                + Nouveau Tournoi
+            </a>
+        </div>
+    @endforelse
+</div>
 
             </div>
         </div>
@@ -269,51 +322,11 @@
             </div>
 
             <div class="flex border-b border-white/10 mb-6 gap-6">
-                <button onclick="switchTab('requests')" id="tab-requests" class="pb-3 font-bold text-warning border-b-2 border-warning px-2 transition">📩 Demandes (3)</button>
-                <button onclick="switchTab('participants')" id="tab-participants" class="pb-3 font-bold text-gray-500 border-b-2 border-transparent hover:text-white px-2 transition">👥 Participants</button>
+                <button onclick="switchTab('participants')" id="tab-participants" class="pb-3 font-bold text-cyan border-b-2 border-cyan px-2 transition">👥 Participants</button>
                 <button onclick="switchTab('bracket')" id="tab-bracket" class="pb-3 font-bold text-gray-500 border-b-2 border-transparent hover:text-white px-2 transition">🏆 Arbre (Map)</button>
             </div>
 
-            <div id="tab-content-requests" class="block fade-in">
-                <div class="glass-card overflow-hidden rounded-xl">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-black/30 text-gray-500 text-xs uppercase tracking-wider">
-                                <th class="p-4 font-medium">Candidat / Équipe</th>
-                                <th class="p-4 font-medium">Date de demande</th>
-                                <th class="p-4 font-medium">Winrate Joueur</th>
-                                <th class="p-4 font-medium text-right">Décision</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-white/5">
-                            <tr class="hover:bg-white/5 transition">
-                                <td class="p-4 font-bold text-white flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-gray-700 rounded-full"></div> Team Alpha
-                                </td>
-                                <td class="p-4 text-gray-400">Il y a 2 heures</td>
-                                <td class="p-4 text-success font-bold">68%</td>
-                                <td class="p-4 text-right space-x-2">
-                                    <button onclick="acceptRow(this)" class="bg-success/20 text-success border border-success/30 hover:bg-success hover:text-white px-3 py-1 rounded font-bold transition">Accepter</button>
-                                    <button onclick="rejectRow(this)" class="bg-crimson/20 text-crimson border border-crimson/30 hover:bg-crimson hover:text-white px-3 py-1 rounded font-bold transition">Refuser</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-white/5 transition">
-                                <td class="p-4 font-bold text-white flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-gray-700 rounded-full"></div> Solo_Killer
-                                </td>
-                                <td class="p-4 text-gray-400">Hier</td>
-                                <td class="p-4 text-warning font-bold">45%</td>
-                                <td class="p-4 text-right space-x-2">
-                                    <button onclick="acceptRow(this)" class="bg-success/20 text-success border border-success/30 hover:bg-success hover:text-white px-3 py-1 rounded font-bold transition">Accepter</button>
-                                    <button onclick="rejectRow(this)" class="bg-crimson/20 text-crimson border border-crimson/30 hover:bg-crimson hover:text-white px-3 py-1 rounded font-bold transition">Refuser</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-content-participants" class="hidden fade-in">
+            <div id="tab-content-participants" class="block fade-in">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-black/40 border border-white/5 rounded-lg p-4 flex items-center gap-3">
                         <div class="w-10 h-10 bg-cyan/20 rounded-full flex items-center justify-center text-cyan font-bold">1</div>
@@ -347,69 +360,67 @@
             </div>
 
             <div id="tab-content-bracket" class="hidden fade-in">
-                <div class="clean-bracket-wrapper">
-                    
-                    <div class="bracket-header">
-                        <h2>Tournament<br>Bracket</h2>
-                        <div class="header-accent"></div>
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Sidebar pour les participants (Drag Source) -->
+                    <div class="w-full lg:w-64 bg-black/40 border border-white/5 p-4 rounded-xl">
+                        <h3 class="text-gold font-bold mb-4 border-b border-white/10 pb-2">Joueurs Acceptés</h3>
+                        <div id="bracket-participants-list" class="flex flex-col gap-2 min-h-[200px]" ondragover="allowDrop(event)" ondrop="handleDrop(event, null, null)">
+                            <!-- Draggable Team items -->
+                            <div class="clean-team-node cursor-grab active:cursor-grabbing bg-gray-700 w-full text-white" draggable="true" id="team-1" data-team-id="1" ondragstart="handleDragStart(event)">OUSSAMA_PRO</div>
+                            <div class="clean-team-node cursor-grab active:cursor-grabbing bg-gray-700 w-full text-white" draggable="true" id="team-2" data-team-id="2" ondragstart="handleDragStart(event)">GHOST_RIDER</div>
+                            <div class="clean-team-node cursor-grab active:cursor-grabbing bg-gray-700 w-full text-white" draggable="true" id="team-3" data-team-id="3" ondragstart="handleDragStart(event)">TEAM ALPHA</div>
+                            <div class="clean-team-node cursor-grab active:cursor-grabbing bg-gray-700 w-full text-white" draggable="true" id="team-4" data-team-id="4" ondragstart="handleDragStart(event)">FNC MASTERS</div>
+                        </div>
                     </div>
 
-                    <div class="flex mt-16">
-                        
-                        <div class="clean-round gap-4">
-                            <div class="clean-match h-[110px]">
-                                <div class="clean-team-node">OUSSAMA_PRO</div>
-                                <div class="clean-team-node">PLAYER_02</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
-                            </div>
-                            <div class="clean-match h-[110px]">
-                                <div class="clean-team-node">TEAM ALPHA</div>
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
-                            </div>
-                            <div class="clean-match h-[110px]">
-                                <div class="clean-team-node">GHOST_RIDER</div>
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
-                            </div>
-                            <div class="clean-match h-[110px]">
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
-                            </div>
+                    <!-- L'Arbre Drag and Drop -->
+                    <div id="bracket-container" class="flex-grow bg-[#f8f9fa] rounded-xl relative overflow-auto">
+                        <button onclick="toggleFullScreen()" class="absolute top-4 left-4 z-50 bg-black/80 hover:bg-black text-white px-4 py-2 rounded font-bold shadow transition border border-white/20">
+                            🔲 Afficher en Plein Écran
+                        </button>
+                        <div class="clean-bracket-wrapper border-none">
+                        <div class="bracket-header">
+                            <h2>Tournament<br>Bracket</h2>
+                            <div class="header-accent"></div>
                         </div>
 
-                        <div class="clean-round gap-4">
-                            <div class="clean-match h-[236px]">
-                                <div class="clean-team-node">OUSSAMA_PRO</div>
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
+                        <div class="flex mt-16 overflow-x-auto pb-4">
+                            <!-- Round 1 -->
+                            <div class="clean-round gap-4">
+                                <div class="clean-match h-[110px]" data-match-id="1">
+                                    <div class="clean-team-node dropzone bg-gray-200" data-slot="team1_id" ondragover="allowDrop(event)" ondrop="handleDrop(event, 1, 'team1_id')">TBD</div>
+                                    <div class="clean-team-node dropzone bg-gray-200" data-slot="team2_id" ondragover="allowDrop(event)" ondrop="handleDrop(event, 1, 'team2_id')">TBD</div>
+                                    <div class="clean-connector"><div class="clean-green-accent"></div></div>
+                                </div>
+                                <div class="clean-match h-[110px]" data-match-id="2">
+                                    <div class="clean-team-node dropzone bg-gray-200" data-slot="team1_id" ondragover="allowDrop(event)" ondrop="handleDrop(event, 2, 'team1_id')">TBD</div>
+                                    <div class="clean-team-node dropzone bg-gray-200" data-slot="team2_id" ondragover="allowDrop(event)" ondrop="handleDrop(event, 2, 'team2_id')">TBD</div>
+                                    <div class="clean-connector"><div class="clean-green-accent"></div></div>
+                                </div>
                             </div>
-                            <div class="clean-match h-[236px]">
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
+
+                            <!-- Round 2 -->
+                            <div class="clean-round gap-4">
+                                <div class="clean-match h-[236px]" data-match-id="3">
+                                    <!-- Slots automatiques de progression, ou drag drop manuel ? Normalement c'est manuel si le score n'est pas fait -->
+                                    <div class="clean-team-node bg-gray-300 opacity-50" title="Vainqueur Match 1">TBD</div>
+                                    <div class="clean-team-node bg-gray-300 opacity-50" title="Vainqueur Match 2">TBD</div>
+                                    <div class="clean-connector"><div class="clean-green-accent"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- Final Winner -->
+                            <div class="clean-round justify-center">
+                                <div class="flex flex-col items-center gap-6">
+                                    <div class="clean-team-node text-center w-48 bg-gold text-black border-l-black">WINNER</div>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="clean-round gap-4">
-                            <div class="clean-match h-[488px]">
-                                <div class="clean-team-node">OUSSAMA_PRO</div>
-                                <div class="clean-team-node clean-team-empty">TBD</div>
-                                <div class="clean-connector"><div class="clean-green-accent"></div></div>
-                            </div>
                         </div>
-
-                        <div class="clean-round justify-center">
-                            <div class="flex flex-col items-center gap-6">
-                                <div class="clean-team-node text-center w-48">OUSSAMA_PRO</div>
-                                <div class="text-6xl drop-shadow-md"></div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
+        </div>
 
         </div>
 
@@ -421,11 +432,6 @@
 
     <script>
         // SPA : Passer de la vue Dashboard à la vue d'un Tournoi
-        function openTournamentView(title) {
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-tournament').classList.remove('hidden');
-            document.getElementById('panel-title').innerText = title;
-        }
 
         function closeTournamentView() {
             document.getElementById('view-tournament').classList.add('hidden');
@@ -435,7 +441,7 @@
         // SPA : Changer d'onglet dans le panneau du tournoi
         function switchTab(tabName) {
             // Cacher tous les contenus
-            ['requests', 'participants', 'bracket'].forEach(t => {
+            ['participants', 'bracket'].forEach(t => {
                 document.getElementById('tab-content-' + t).classList.add('hidden');
                 document.getElementById('tab-' + t).className = "pb-3 font-bold text-gray-500 border-b-2 border-transparent hover:text-white px-2 transition";
             });
@@ -444,7 +450,7 @@
             document.getElementById('tab-content-' + tabName).classList.remove('hidden');
             
             // Style de l'onglet actif
-            let colorClass = tabName === 'requests' ? 'text-warning border-warning' : (tabName === 'participants' ? 'text-cyan border-cyan' : 'text-gold border-gold');
+            let colorClass = tabName === 'participants' ? 'text-cyan border-cyan' : 'text-gold border-gold';
             document.getElementById('tab-' + tabName).className = `pb-3 font-bold ${colorClass} border-b-2 px-2 transition`;
         }
 
@@ -468,6 +474,222 @@
             setTimeout(() => {
                 toast.style.transform = 'translateX(200%)';
             }, 3000);
+        }
+
+        // --- DRAG AND DROP BRACKET LOGIC ---
+        let currentTournamentId = null;
+
+        function openTournamentView(title, tournamentId) {
+            currentTournamentId = tournamentId; // Store for AJAX request
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-tournament').classList.remove('hidden');
+            document.getElementById('panel-title').innerText = title;
+            switchTab('participants'); // Default tab
+
+            // Fetch dynamic data for this tournament
+            fetch(`/organizer/tournaments/${tournamentId}/data`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        const list = document.getElementById('bracket-participants-list');
+                        list.innerHTML = '';
+                        
+                        data.teams.forEach(team => {
+                            // Check if this team is already placed in a match (server side or just build it here)
+                            // For simplicity, we just list all teams in the sidebar. 
+                            // In a real app we'd filter out ones already in data.matches.
+                            
+                            const div = document.createElement('div');
+                            div.className = 'clean-team-node cursor-grab active:cursor-grabbing bg-gray-700 w-full text-white team-drag';
+                            div.setAttribute('draggable', 'true');
+                            div.id = 'team-' + team.id;
+                            div.setAttribute('data-team-id', team.id);
+                            div.ondragstart = handleDragStart;
+                            div.innerText = team.name;
+
+                            // If team is not yet in data.matches, append it to sidebar
+                            let isPlaced = false;
+                            data.matches.forEach(m => {
+                                if(m.team1_id === team.id || m.team2_id === team.id) isPlaced = true;
+                            });
+
+                            if(!isPlaced) {
+                                list.appendChild(div);
+                            }
+
+                        });
+
+                        // Now dynamically restore matches into the bracket map
+                        // (Requires resetting all slots to 'TBD' first)
+                        document.querySelectorAll('.clean-match[data-match-id]').forEach(matchEl => {
+                            const matchIdStr = matchEl.getAttribute('data-match-id');
+                            const matchData = data.matches.find(m => String(m.id) === matchIdStr);
+                            
+                            const slot1 = matchEl.querySelector('[data-slot="team1_id"]');
+                            const slot2 = matchEl.querySelector('[data-slot="team2_id"]');
+                            
+                            if (slot1 && slot2) {
+                                slot1.innerText = 'TBD';
+                                slot1.className = 'clean-team-node dropzone bg-gray-200';
+                                slot2.innerText = 'TBD';
+                                slot2.className = 'clean-team-node dropzone bg-gray-200';
+
+                                if (matchData) {
+                                    if(matchData.team1_id) injectTeamToSlot(slot1, data.teams.find(t=>t.id===matchData.team1_id));
+                                    if(matchData.team2_id) injectTeamToSlot(slot2, data.teams.find(t=>t.id===matchData.team2_id));
+
+                                    // Winner button simple logic (only show if both teams are present and no winner yet)
+                                    if(matchData.team1_id && matchData.team2_id && !matchData.winner_team_id) {
+                                        addWinnerButton(slot1, matchData.id, matchData.team1_id);
+                                        addWinnerButton(slot2, matchData.id, matchData.team2_id);
+                                    } else if (matchData.winner_team_id) {
+                                        if (matchData.team1_id === matchData.winner_team_id) slot1.classList.replace('bg-gold', 'bg-success');
+                                        if (matchData.team2_id === matchData.winner_team_id) slot2.classList.replace('bg-gold', 'bg-success');
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+        }
+
+        function injectTeamToSlot(slot, team) {
+            if(!team) return;
+            const div = document.createElement('div');
+            div.className = 'clean-team-node cursor-grab active:cursor-grabbing bg-gold w-full text-black team-drag';
+            div.setAttribute('draggable', 'true');
+            div.id = 'team-' + team.id;
+            div.setAttribute('data-team-id', team.id);
+            div.ondragstart = handleDragStart;
+            div.innerText = team.name;
+
+            slot.innerText = '';
+            slot.appendChild(div);
+        }
+
+        function addWinnerButton(slot, matchId, teamId) {
+            const btn = document.createElement('button');
+            btn.className = "absolute right-[-25px] top-1 bg-success text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold shadow hover:scale-110 transition z-50";
+            btn.innerHTML = "W";
+            btn.title = "Déclarer Gagnant";
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                declareWinner(matchId, teamId);
+            };
+            slot.style.position = 'relative';
+            slot.appendChild(btn);
+        }
+
+        function declareWinner(matchId, teamId) {
+            fetch(`/organizer/tournaments/${currentTournamentId}/bracket/winner`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ match_id: matchId, winner_team_id: teamId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    showToast('Gagnant déclaré !', 'success');
+                    // refresh bracket purely by recalling openTournamentView
+                    openTournamentView(document.getElementById('panel-title').innerText, currentTournamentId);
+                } else {
+                    showToast(data.message, 'crimson');
+                }
+            });
+        }
+
+        function toggleFullScreen() {
+            const container = document.getElementById("bracket-container");
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch((err) => {
+                    showToast("Erreur lors du passage en plein écran.", "crimson");
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function handleDragStart(event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+            event.target.classList.add('opacity-50');
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function handleDrop(event, matchId, slotKey) {
+            event.preventDefault();
+            const id = event.dataTransfer.getData("text");
+            const draggableElement = document.getElementById(id);
+            draggableElement.classList.remove('opacity-50');
+
+            const dropzone = event.target.closest('.dropzone') || event.target.closest('#bracket-participants-list');
+            
+            if (!dropzone) return;
+
+            // Prevent drag inside same dropzone
+            if (dropzone.contains(draggableElement)) return;
+
+            // If dropzone is a slot, append and update DB
+            if (dropzone.classList.contains('dropzone')) {
+                // Clear existing text "TBD" if any
+                if(dropzone.innerText === "TBD") dropzone.innerText = "";
+                
+                dropzone.appendChild(draggableElement);
+                draggableElement.classList.replace('bg-gray-700', 'bg-gold');
+                draggableElement.classList.replace('text-white', 'text-black');
+                
+                const teamId = draggableElement.getAttribute('data-team-id');
+                saveBracketPosition(matchId, slotKey, teamId);
+            } 
+            // If dragging back to sidebar
+            else if (dropzone.id === 'bracket-participants-list') {
+                dropzone.appendChild(draggableElement);
+                draggableElement.classList.replace('bg-gold', 'bg-gray-700');
+                draggableElement.classList.replace('text-black', 'text-white');
+                // Could trigger an unassign request here if needed
+            }
+        }
+
+        document.addEventListener('dragend', function(event) {
+            if(event.target.classList && event.target.classList.contains('team-drag')) {
+                event.target.classList.remove('opacity-50');
+            }
+        });
+
+        function saveBracketPosition(matchId, slotKey, teamId) {
+            if (!currentTournamentId) return;
+
+            fetch(`/organizer/tournaments/${currentTournamentId}/bracket`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    match_id: matchId,
+                    slot: slotKey,      // 'team1_id' or 'team2_id'
+                    team_id: teamId     // ID of the team/player
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    showToast('Position sauvegardée dans la DB !');
+                } else {
+                    showToast('Erreur lors de la sauvegarde.', 'crimson');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Erreur serveur de sauvegarde.', 'crimson');
+            });
         }
     </script>
 </body>

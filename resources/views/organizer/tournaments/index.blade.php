@@ -1,106 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Tournois - YouCode Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#050505',
+                        gold: '#FFD700',
+                        cyan: '#00F0FF',
+                        crimson: '#DC143C',
+                        success: '#22C55E',
+                        warning: '#f59e0b'
+                    },
+                    fontFamily: {
+                        display: ['Teko', 'sans-serif'],
+                        sans: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f0f0f0; padding: 2rem; margin: 0; }
-        .dashboard-container { background: white; padding: 2.5rem; border-radius: 20px; max-width: 1100px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .header h1 { margin: 0; font-size: 2rem; color: #111; font-weight: 800; letter-spacing: -0.5px; }
-        .btn-create { background: #f97316; color: white; text-decoration: none; padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2); }
-        .btn-create:hover { background: #ea6c05; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(249, 115, 22, 0.3); }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 16px 12px; text-align: left; border-bottom: 1px solid #f2f3f5; font-size: 0.9rem; }
-        th { color: #6b7280; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; background: #fafafa; }
-        td { color: #111; font-weight: 500; }
-        .status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
-        .status-avenir { background: #dbeafe; color: #1e40af; }
-        .status-ouvertes { background: #d1fae5; color: #065f46; }
-        .status-terminees { background: #fee2e2; color: #991b1b; }
-        .alert-success { background: #d1fae5; color: #065f46; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 500; font-size: 0.9rem; border: 1px solid #a7f3d0; }
-        
-        /* Actions (Edit / Delete) */
-        .actions-cell { display: flex; gap: 10px; align-items: center; }
-        .btn-edit { color: #3b82f6; font-weight: 600; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: #eff6ff; transition: background 0.2s; }
-        .btn-edit:hover { background: #dbeafe; }
-        .btn-delete { color: #ef4444; font-weight: 600; background: #fef2f2; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 0.9rem; transition: background 0.2s; }
-        .btn-delete:hover { background: #fee2e2; }
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at 50% 10%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
+        }
+        .glass-card {
+            background: linear-gradient(145deg, rgba(20, 25, 35, 0.8), rgba(10, 12, 18, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+        }
     </style>
 </head>
-<body>
-
-    <div class="dashboard-container">
-        
-        @if(session('success'))
-            <div class="alert-success">
-                ✅ {{ session('success') }}
+<body class="text-gray-200 font-sans min-h-screen">
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+            <div>
+                <a href="{{ route('organizer.dashboard') }}" class="text-sm text-gray-500 hover:text-gold transition">← Retour à l'espace organisateur</a>
+                <h1 class="text-5xl font-display font-bold text-white tracking-wider mt-2">MES TOURNOIS</h1>
+                <p class="text-gray-400">Vue opérationnelle de tes compétitions, inscriptions et matchs.</p>
             </div>
-        @endif
-
-        <div class="header">
-            <h1>Mes Tournois</h1>
-            <a href="{{ route('organizer.tournaments.create') }}" class="btn-create">+ Créer un Événement</a>
+            <a href="{{ route('organizer.tournaments.create') }}" class="inline-flex items-center justify-center bg-gold hover:bg-yellow-500 text-black font-bold px-5 py-3 rounded-lg transition">
+                + Créer un tournoi
+            </a>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Titre</th>
-                    <th>Jeu</th>
-                    <th>Catégorie</th>
-                    <th>Date</th>
-                    <th>Capacité</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($tournaments as $tournament)
-                    <tr>
-                        <td><strong>{{ $tournament->title }}</strong></td>
-                        <td>{{ $tournament->game->name }}</td>
-                        <td>{{ $tournament->category->name }}</td>
-                        <td>{{ $tournament->event_date->format('d/m/Y - H:i') }}</td>
-                        
-                        <td>
-                            <span style="font-weight: 600; color: {{ $tournament->is_full ? '#ef4444' : '#10b981' }};">
-                                {{ $tournament->registered_count }}
-                            </span> 
-                            / {{ $tournament->max_capacity }}
-                            
-                            @if($tournament->is_full)
-                                <br><span style="font-size: 0.7rem; color: #ef4444; font-weight: bold;">(COMPLET)</span>
-                            @endif
-                        </td>
+        @if(session('success'))
+            <div class="mb-6 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-success font-bold">{{ session('success') }}</div>
+        @endif
 
-                        <td>
-                            <span class="status status-{{ Str::slug($tournament->status) }}">
-                                {{ $tournament->status }}
-                            </span>
-                        </td>
-                        <td class="actions-cell">
-                            <a href="{{ route('organizer.tournaments.edit', $tournament->id) }}" class="btn-edit">Edit</a>
-                            
-                            <form action="{{ route('organizer.tournaments.destroy', $tournament->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler et supprimer ce tournoi ?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-delete">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: #6b7280; padding: 3rem 1rem;">
-                            Vous n'avez pas encore créé de tournoi. C'est le moment de lancer l'arène ! 🎮
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+        @if(session('error'))
+            <div class="mb-6 rounded-xl border border-crimson/30 bg-crimson/10 px-4 py-3 text-crimson font-bold">{{ session('error') }}</div>
+        @endif
 
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            @forelse($tournaments as $tournament)
+                <article class="glass-card rounded-2xl p-6 flex flex-col gap-5">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-gold text-sm uppercase tracking-[0.3em] font-bold">{{ $tournament->game->name ?? 'Jeu' }}</p>
+                            <h2 class="text-3xl font-display font-bold text-white">{{ $tournament->title }}</h2>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border {{ $tournament->status === 'Ouvert' ? 'border-success/40 text-success bg-success/10' : 'border-white/10 text-gray-300 bg-white/5' }}">
+                            {{ $tournament->status }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="rounded-xl bg-black/30 p-4">
+                            <div class="text-gray-500 uppercase tracking-widest text-xs mb-1">Participants confirmés</div>
+                            <div class="text-2xl font-display text-white">{{ $tournament->confirmed_registrations_count }}/{{ $tournament->max_capacity }}</div>
+                        </div>
+                        <div class="rounded-xl bg-black/30 p-4">
+                            <div class="text-gray-500 uppercase tracking-widest text-xs mb-1">Demandes en attente</div>
+                            <div class="text-2xl font-display text-warning">{{ $tournament->pending_registrations_count }}</div>
+                        </div>
+                        <div class="rounded-xl bg-black/30 p-4">
+                            <div class="text-gray-500 uppercase tracking-widest text-xs mb-1">Matchs planifiés</div>
+                            <div class="text-2xl font-display text-cyan">{{ $tournament->scheduled_matches_count }}</div>
+                        </div>
+                        <div class="rounded-xl bg-black/30 p-4">
+                            <div class="text-gray-500 uppercase tracking-widest text-xs mb-1">Date</div>
+                            <div class="text-lg font-bold text-white">{{ $tournament->event_date->format('d/m/Y H:i') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{{ route('organizer.tournaments.edit', $tournament) }}" class="px-4 py-2 rounded-lg bg-cyan/10 text-cyan border border-cyan/20 hover:bg-cyan hover:text-black transition font-bold text-sm">
+                            Modifier
+                        </a>
+                        <a href="{{ route('organizer.matches.index', $tournament) }}" class="px-4 py-2 rounded-lg bg-white/5 text-white border border-white/10 hover:border-gold hover:text-gold transition font-bold text-sm">
+                            Matchs & arbre
+                        </a>
+                        <form action="{{ route('organizer.tournaments.update_status', $tournament) }}" method="POST" class="flex items-center gap-2">
+                            @csrf
+                            @method('PATCH')
+                            <select name="status" class="rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm text-white">
+                                @foreach(['Ouvert', 'Fermé', 'À venir', 'Terminé'] as $status)
+                                    <option value="{{ $status }}" @selected($tournament->status === $status)>{{ $status }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="px-4 py-2 rounded-lg bg-gold text-black hover:bg-yellow-500 transition font-bold text-sm">
+                                Mettre à jour
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            @empty
+                <div class="col-span-full glass-card rounded-2xl p-12 text-center text-gray-400">
+                    <p class="text-3xl font-display font-bold text-white mb-2">Aucun tournoi pour le moment</p>
+                    <p>Crée ton premier tournoi pour ouvrir l'arène.</p>
+                </div>
+            @endforelse
+        </div>
+    </main>
 </body>
 </html>
