@@ -20,6 +20,12 @@ class FeedController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(
+            auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Organisateur'),
+            403,
+            'Seuls les organisateurs et les admins peuvent publier sur le Competition Hub.'
+        );
+
         $request->validate([
             'content' => 'required|string|max:500',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
