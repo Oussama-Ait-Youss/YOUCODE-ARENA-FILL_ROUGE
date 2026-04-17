@@ -180,19 +180,35 @@
                         
                         <div class="flex justify-between text-gray-400 text-sm mb-6 border-t border-white/5 pt-4">
                             <span class="flex items-center gap-1">📅 {{ \Carbon\Carbon::parse($tournament->event_date)->format('d M Y') }}</span>
-                            <span class="flex items-center gap-1">👥 {{ $tournament->teams_count ?? 0 }} / {{ $tournament->max_capacity }} places</span>
+                            <span class="flex items-center gap-1">👥 {{ $tournament->confirmed_registrations_count ?? 0 }} / {{ $tournament->max_capacity }} places</span>
                         </div>
                     </div>
 
-                    @if($tournament->status == 'À venir' && ($tournament->teams_count ?? 0) < $tournament->max_capacity)
-                        <a href="{{ route('competitor.teams.create', $tournament->id) }}" class="block w-full text-center bg-crimson hover:bg-red-700 text-white font-display tracking-widest px-6 py-3 rounded transition-colors shadow-neon">
-                            CRÉER UNE ÉQUIPE
+                    <div class="grid grid-cols-1 gap-3">
+                        <a href="{{ route('competitor.tournaments.show', $tournament->id) }}" class="block w-full text-center bg-white/5 border border-white/10 hover:border-cyan hover:text-cyan text-white font-display tracking-widest px-6 py-3 rounded transition-colors">
+                            VOIR LES DÉTAILS
                         </a>
-                    @else
-                        <div class="block w-full text-center bg-white/5 text-gray-500 font-display tracking-widest px-6 py-3 rounded cursor-not-allowed">
-                            INSCRIPTIONS FERMÉES
-                        </div>
-                    @endif
+                        @php
+                            // On vérifie si l'utilisateur connecté est déjà inscrit à ce tournoi
+                            $isRegistered = \App\Models\Registration::where('user_id', auth()->id())
+                                                ->where('tournament_id', $tournament->id)
+                                                ->exists();
+                        @endphp
+
+                        @if($isRegistered)
+                            <div class="block w-full text-center bg-success/10 text-success border border-success/30 font-display tracking-widest px-6 py-3 rounded cursor-default shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+                                ✅ DÉJÀ INSCRIT
+                            </div>
+                        @elseif($tournament->status == 'Ouvert' && ($tournament->confirmed_registrations_count ?? 0) < $tournament->max_capacity)
+                            <a href="{{ route('competitor.teams.create', $tournament->id) }}" class="block w-full text-center bg-crimson hover:bg-red-700 text-white font-display tracking-widest px-6 py-3 rounded transition-colors shadow-neon">
+                                {{ $tournament->game?->requiresTeamInvite() ? 'CRÉER L\'ÉQUIPE' : 'REJOINDRE LE TOURNOI' }}
+                            </a>
+                        @else
+                            <div class="block w-full text-center bg-white/5 text-gray-500 font-display tracking-widest px-6 py-3 rounded cursor-not-allowed">
+                                {{ ($tournament->confirmed_registrations_count ?? 0) >= $tournament->max_capacity ? 'COMPLET' : 'INSCRIPTIONS FERMÉES' }}
+                            </div>
+                        @endif
+                    </div>
                 </div>
             @empty
                 <div class="col-span-full glass-card rounded-xl p-12 text-center text-gray-500">
