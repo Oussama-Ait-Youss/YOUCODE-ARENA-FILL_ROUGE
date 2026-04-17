@@ -12,10 +12,16 @@ class Game extends Model
 
     protected $fillable = ['name'];
 
-
     public function tournaments(){
         return $this->hasMany(Tournament::class);
 
+    }
+
+    public function requiresTeamInvite(): bool
+    {
+        $name = mb_strtolower($this->name ?? '');
+
+        return str_contains($name, 'babyfoot');
     }
 
 }

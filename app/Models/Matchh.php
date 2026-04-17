@@ -17,7 +17,10 @@ class Matchh extends Model
         'winner_team_id', 
         'score',          
         'status', 
-        'played_at'
+        'played_at',
+        'next_match_id',
+        'round',
+        'position_in_round'
     ];
 
     public function tournament(): BelongsTo {
@@ -30,5 +33,13 @@ class Matchh extends Model
 
     public function team2(): BelongsTo {
         return $this->belongsTo(Team::class, 'team2_id');
+    }
+
+    public function winnerTeam(): BelongsTo {
+        return $this->belongsTo(Team::class, 'winner_team_id');
+    }
+
+    public function nextMatch(): BelongsTo {
+        return $this->belongsTo(self::class, 'next_match_id');
     }
 }

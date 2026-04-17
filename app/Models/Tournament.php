@@ -53,12 +53,12 @@ class Tournament extends Model
     }
 
 
-    // Logique de Quotas et de Cloture
     
     public function getRegisteredCountAttribute(): int
     {
-       
-        return $this->registrations()->count();
+        return $this->registrations()
+            ->whereIn('status', ['Confirmé', 'Accepté'])
+            ->count();
     }
 
    
@@ -76,16 +76,18 @@ class Tournament extends Model
     
     public function getCanRegisterAttribute(): bool
     {
-        
-        return !$this->is_past && !$this->is_full && $this->status !== 'Terminées';
+        return !$this->is_past && !$this->is_full && $this->status === 'Ouvert';
     }
 
 
     public function matches() 
     {
         return $this->hasMany(Matchh::class); 
-        
-        
+    }
+
+    public function isOpenForRegistration(): bool
+    {
+        return $this->can_register;
     }
 
 
