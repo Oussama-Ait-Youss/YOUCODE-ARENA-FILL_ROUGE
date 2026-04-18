@@ -35,7 +35,8 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
 
     Route::middleware(['auth', 'role:Organisateur'])->prefix('organizer')->name('organizer.')->group(function () {
     
-        Route::get('/dashboard', [TournamentController::class, 'index'])->name('dashboard'); 
+        Route::get('/dashboard', [TournamentController::class, 'index'])->name('dashboard');
+        
         
         Route::get('/tournaments/{tournament}/data', [\App\Http\Controllers\Organizer\TournamentController::class, 'data'])->name('tournaments.data');
         Route::resource('tournaments', TournamentController::class);
@@ -67,6 +68,8 @@ Route::middleware(['auth', 'not_banned', 'role:Compétiteur'])->prefix('competit
     Route::get('/tournaments/{tournament}/teams/create', [TeamController::class, 'create'])->name('teams.create');
     Route::post('/tournaments/{tournament}/teams', [TeamController::class, 'store'])->name('teams.store');
     Route::delete('/tournaments/{tournament}/registration', [TeamController::class, 'leave'])->name('tournaments.leave');
+    Route::post('/teams/accept/{tournament}', [TeamController::class, 'acceptInvite'])->name('teams.accept');
+Route::post('/teams/decline/{tournament}', [TeamController::class, 'declineInvite'])->name('teams.decline');
     Route::get('/my-teams', [TeamController::class, 'index'])->name('teams.index');
     Route::get('/tournaments/{tournament}', [TournamentExplorerController::class, 'show'])->name('tournaments.show');
     Route::get('/leaderboard', [\App\Http\Controllers\Competitor\LeaderboardController::class, 'index'])->name('leaderboard');

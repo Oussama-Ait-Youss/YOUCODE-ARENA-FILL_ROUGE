@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class TeamController extends Controller
-
 {
     public function index()
     {
@@ -41,8 +40,6 @@ class TeamController extends Controller
 
         return view('competitor.teams.create', compact('tournament', 'isDuo'));
     }
-
-
 
     public function store(Request $request, Tournament $tournament)
     {
@@ -90,7 +87,6 @@ class TeamController extends Controller
             ]);
 
             $team->members()->attach(Auth::id(), ['joined_at' => now()]);
-            // $team->members()->attach(Auth::id());
 
             Registration::create([
                 'user_id' => Auth::id(),
@@ -114,6 +110,7 @@ class TeamController extends Controller
                     : false;
 
                 if ($partner && !$partnerAlreadyRegistered) {
+$team->members()->attach($partner->id, ['joined_at' => now()]);
                     Registration::create([
                         'user_id' => $partner->id,
                         'tournament_id' => $tournament->id,
@@ -140,27 +137,61 @@ class TeamController extends Controller
             ->first();
 
         if (!$registration) {
-            return redirect()->route('competitor.tournaments.show', $tournament)
-                ->with('error', 'Aucune inscription trouvée pour ce tournoi.');
+            return redirect()->back()->with('error', 'Vous n\'êtes pas inscrit à ce tournoi.');
         }
 
         DB::transaction(function () use ($user, $tournament, $registration) {
-            $team = $user->teams()
-                ->where('tournament_id', $tournament->id)
-                ->first();
+            $team = $user->teams()->where('tournament_id', $tournament->id)->first();
 
             if ($team) {
-                $team->members()->detach($user->id);
+                $memberIds = $team->members()->pluck('users.id');
 
-                if ($team->members()->count() === 0) {
-                    $team->delete();
-                }
+                Registration::whereIn('user_id', $memberIds)
+                    ->where('tournament_id', $tournament->id)
+                    ->delete();
+
+                $team->members()->detach();
+                $team->delete();
+            } else {
+                $registration->delete();
             }
-
-            $registration->delete();
         });
 
         return redirect()->route('competitor.tournaments.index')
-            ->with('success', 'Tu as quitté le tournoi et ta place a été libérée.');
+            ->with('success', 'Vous avez quitté le tournoi. Votre équipe a été dissoute et les places sont libérées.');
+    }
+
+    public function acceptInvite(Tournament $tournament)
+    {
+        $userId = auth()->id();
+
+        Registration::where('user_id', $userId)
+            ->where('tournament_id', $tournament->id)
+            ->update(['status' => 'Confirmé']);
+
+        DB::table('team_members')
+            ->where('user_id', $userId)
+            ->whereIn('team_id', function ($query) use ($tournament) {
+                $query->select('id')->from('teams')->where('tournament_id', $tournament->id);
+            })
+            ->update(['joined_at' => now()]);
+
+        return back()->with('success', 'Vous avez rejoint le tournoi !');
+    }
+
+    public function declineInvite(Tournament $tournament)
+    {
+        $userId = auth()->id();
+
+        Registration::where('user_id', $userId)->where('tournament_id', $tournament->id)->delete();
+
+        DB::table('team_members')
+            ->where('user_id', $userId)
+            ->whereIn('team_id', function ($query) use ($tournament) {
+                $query->select('id')->from('teams')->where('tournament_id', $tournament->id);
+            })
+            ->delete();
+
+        return back()->with('success', 'Invitation refusée.');
     }
 }

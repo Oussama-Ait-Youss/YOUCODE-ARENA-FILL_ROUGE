@@ -56,7 +56,7 @@
     <a href="{{ route('dashboard') }}" class="back-link">← Retour au Quartier Général</a>
 
     <div class="header">
-        <h1 class="title">🏆 Hall of Fame</h1>
+        <h1 class="title"> Hall of Fame</h1>
         <p class="subtitle">Le Top 10 des meilleurs gladiateurs de YouCode Arena</p>
     </div>
 
@@ -75,9 +75,9 @@
             <div class="rank-card {{ $rankClass }} {{ $isMeClass }}">
                 <div class="rank-info">
                     <div class="rank-number">
-                        @if($index == 0) 🥇
-                        @elseif($index == 1) 🥈
-                        @elseif($index == 2) 🥉
+                        @if($index == 0) 
+                        @elseif($index == 1) 
+                        @elseif($index == 2) 
                         @else #{{ $index + 1 }}
                         @endif
                     </div>

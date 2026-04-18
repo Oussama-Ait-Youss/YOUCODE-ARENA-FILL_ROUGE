@@ -178,7 +178,7 @@
 
                         <div class="flex justify-between items-center mt-4">
                             <label class="cursor-pointer flex items-center gap-2 text-gray-400 hover:text-cyan transition bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-bold border border-white/5">
-                                <span>📷 Ajouter une image</span>
+                                <span> Ajouter une image</span>
                                 <input type="file" name="image" class="hidden" accept="image/*" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>
                             <span id="file-name" class="text-xs text-cyan truncate max-w-[150px] ml-2"></span>
@@ -188,7 +188,7 @@
                 </div>
             @else
                 <div class="glass-card rounded-xl p-6 mb-8 text-center border-t-2 border-t-cyan">
-                    <h3 class="font-display font-bold text-xl text-white tracking-wider">🔥 L'ARÈNE EST OUVERTE</h3>
+                    <h3 class="font-display font-bold text-xl text-white tracking-wider"> L'ARÈNE EST OUVERTE</h3>
                     <p class="text-gray-400 text-sm mt-1">Suis les annonces officielles ici.</p>
                 </div>
             @endif
@@ -247,7 +247,7 @@
         <aside class="hidden md:block col-span-1">
             <div class="glass-card border border-gold/30 rounded-xl p-6 text-center sticky top-24 overflow-hidden">
                 <div class="absolute inset-0 bg-gold/5 animate-pulse"></div>
-                <div class="text-gold text-4xl mb-2">👑</div>
+                <div class="text-gold text-4xl mb-2"></div>
                 <h3 class="font-display font-bold text-2xl text-white mb-4">LAST WINNER</h3>
                 <div class="w-20 h-20 bg-gray-700 rounded-full mx-auto my-4 border-2 border-gold p-1 relative z-10">
                     <img src="https://ui-avatars.com/api/?name=Oussama+Pro&background=000&color=FFD700" class="w-full h-full rounded-full object-cover">

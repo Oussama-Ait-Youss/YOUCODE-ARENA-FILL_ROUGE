@@ -99,13 +99,13 @@
 
                 @if(auth()->user()->hasRole('Organisateur'))
                     <a href="{{ route('organizer.dashboard') }}" class="text-gold hover:text-white font-display tracking-wider text-lg transition-colors flex items-center gap-1">
-                        👑 MES TOURNOIS
+                         MES TOURNOIS
                     </a>
                 @endif
 
                 @if(auth()->user()->hasRole('Admin'))
                     <a href="{{ route('admin.dashboard') }}" class="text-cyan hover:text-white font-display tracking-wider text-lg transition-colors flex items-center gap-1">
-                        🛡️ ADMINISTRATION
+                         ADMINISTRATION
                     </a>
                 @endif
 
@@ -179,7 +179,7 @@
                         <h3 class="text-2xl font-bold text-white mb-4">{{ $tournament->title }}</h3>
                         
                         <div class="flex justify-between text-gray-400 text-sm mb-6 border-t border-white/5 pt-4">
-                            <span class="flex items-center gap-1">📅 {{ \Carbon\Carbon::parse($tournament->event_date)->format('d M Y') }}</span>
+                            <span class="flex items-center gap-1"> {{ \Carbon\Carbon::parse($tournament->event_date)->format('d M Y') }}</span>
                             <span class="flex items-center gap-1">👥 {{ $tournament->confirmed_registrations_count ?? 0 }} / {{ $tournament->max_capacity }} places</span>
                         </div>
                     </div>
@@ -197,7 +197,7 @@
 
                         @if($isRegistered)
                             <div class="block w-full text-center bg-success/10 text-success border border-success/30 font-display tracking-widest px-6 py-3 rounded cursor-default shadow-[0_0_15px_rgba(34,197,94,0.1)]">
-                                ✅ DÉJÀ INSCRIT
+                                 DÉJÀ INSCRIT
                             </div>
                         @elseif($tournament->status == 'Ouvert' && ($tournament->confirmed_registrations_count ?? 0) < $tournament->max_capacity)
                             <a href="{{ route('competitor.teams.create', $tournament->id) }}" class="block w-full text-center bg-crimson hover:bg-red-700 text-white font-display tracking-widest px-6 py-3 rounded transition-colors shadow-neon">
@@ -212,7 +212,7 @@
                 </div>
             @empty
                 <div class="col-span-full glass-card rounded-xl p-12 text-center text-gray-500">
-                    <div class="text-4xl mb-4">🎮</div>
+                    <div class="text-4xl mb-4"></div>
                     <div class="font-display font-bold text-xl">Aucun tournoi ne correspond à ce filtre pour le moment.</div>
                 </div>
             @endforelse

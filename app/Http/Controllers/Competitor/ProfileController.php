@@ -9,64 +9,45 @@ use Illuminate\Contracts\View\View;
 
 class ProfileController extends Controller
 {
-    public function show(): View
-    {
-        $user = auth()->user();
+    public function show()
+{
+    $user = auth()->user();
 
-        $user->loadMissing(['teams.tournament.game', 'competitorProfile']);
+    // 1. On récupère les invitations en attente (pour la section du haut)
+    $pendingInvites = $user->registrations()
+        ->where('status', 'En attente')
+        ->with('tournament')
+        ->get();
 
-        $teamIds = $user->teams->pluck('id');
+    // 2. 🚨 LE FIX EST ICI : On récupère tous les tournois confirmés/acceptés
+    // On utilise pluck() pour récupérer les IDs sans créer d'erreur de relation
+    $confirmedTournamentIds = \App\Models\Registration::where('user_id', $user->id)
+        ->whereIn('status', ['Confirmé', 'Accepté']) // On check les deux mots au cas où !
+        ->pluck('tournament_id');
 
-        $matches = Matchh::with(['tournament.game', 'team1', 'team2'])
-            ->where(function ($query) use ($teamIds) {
-                $query->whereIn('team1_id', $teamIds)
-                    ->orWhereIn('team2_id', $teamIds);
-            })
-            ->latest('played_at')
-            ->get();
+    $myTournaments = \App\Models\Tournament::whereIn('id', $confirmedTournamentIds)
+        ->with('game') // Pour afficher le nom du jeu (ex: Valorant)
+        ->get();
 
-        $wins = $matches->where('winner_team_id', '!=', null)
-            ->whereIn('winner_team_id', $teamIds)
-            ->count();
+    // 3. Tes statistiques (Garde ta logique actuelle ici)
+    $stats = [
+        'wins' => $user->wins ?? 0,
+        'losses' => $user->losses ?? 0,
+        'win_rate' => ($user->played_matches > 0) ? round(($user->wins / $user->played_matches) * 100) : 0,
+        'played_matches' => $user->played_matches ?? 0,
+        'active_tournaments' => $myTournaments->count(),
+        'challenge_cards' => 0,
+    ];
 
-        $losses = $matches->where('status', 'Terminé')
-            ->whereNotNull('winner_team_id')
-            ->whereNotIn('winner_team_id', $teamIds)
-            ->count();
+    $upcomingChallenges = []; // Si tu as une logique pour les matchs, mets-la ici
 
-        $playedMatches = $wins + $losses;
-        $winRate = $playedMatches > 0 ? (int) round(($wins / $playedMatches) * 100) : 0;
-
-        $currentTournamentIds = $user->teams
-            ->pluck('tournament_id')
-            ->unique()
-            ->values();
-
-        $myTournaments = Tournament::with(['game', 'matches.team1', 'matches.team2'])
-            ->whereIn('id', $currentTournamentIds)
-            ->latest('event_date')
-            ->get();
-
-        $upcomingChallenges = $matches
-            ->whereIn('status', ['Programmé', 'En attente'])
-            ->sortBy('played_at')
-            ->take(6)
-            ->values();
-
-        $stats = [
-            'wins' => $wins,
-            'losses' => $losses,
-            'played_matches' => $playedMatches,
-            'win_rate' => $winRate,
-            'active_tournaments' => $myTournaments->count(),
-            'challenge_cards' => $upcomingChallenges->count(),
-        ];
-
-        return view('competitor.profile', compact(
-            'user',
-            'myTournaments',
-            'stats',
-            'upcomingChallenges'
-        ));
-    }
+    return view('competitor.profile', compact(
+        'user', 
+        'stats', 
+        'pendingInvites', 
+        'myTournaments', 
+        'upcomingChallenges'
+    ));
+}
+    
 }

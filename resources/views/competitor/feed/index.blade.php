@@ -61,13 +61,13 @@
     </div>
 
     <div class="header">
-        <h1 class="title">💬 Le Mur de l'Arène</h1>
+        <h1 class="title"> Le Mur de l'Arène</h1>
         <p class="subtitle">Annonces, trash-talk et discussions entre compétiteurs.</p>
     </div>
 
     @if(session('success'))
         <div class="alert-success">
-            ✅ {{ session('success') }}
+             {{ session('success') }}
         </div>
     @endif
 
@@ -101,9 +101,9 @@
                 </div>
 
                 @if($post->match_id)
-                    <div class="context-badge">⚔️ Lié à un Match</div>
+                    <div class="context-badge"> Lié à un Match</div>
                 @elseif($post->challenge_id)
-                    <div class="context-badge">🎯 Lié à un Défi</div>
+                    <div class="context-badge"> Lié à un Défi</div>
                 @endif
 
                 <div class="post-content">{{ $post->content }}</div>
@@ -122,7 +122,7 @@
             </div>
         @empty
             <div class="empty-state">
-                <div style="font-size: 2rem; margin-bottom: 10px;">👻</div>
+                <div style="font-size: 2rem; margin-bottom: 10px;"></div>
                 Le mur est bien silencieux...<br>Sois le premier à lancer les hostilités !
             </div>
         @endforelse
