@@ -175,6 +175,26 @@
                 @csrf
                 <textarea name="content" rows="3" class="w-full bg-black/80 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-crimson transition-colors resize-none" placeholder="Que veux-tu partager avec l'Arène, {{ auth()->user()->username }} ?" required></textarea>
                 
+               <div class="mb-4 relative inline-block min-w-[250px]">
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-crimson">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                    </div>
+                    
+                    <select name="category_id" class="w-full appearance-none bg-black/60 border border-white/10 hover:border-white/20 rounded-lg pl-9 pr-10 py-2.5 text-sm font-bold tracking-wider uppercase text-gray-300 focus:outline-none focus:border-crimson focus:ring-1 focus:ring-crimson focus:text-white transition-all cursor-pointer shadow-sm">
+                        <option value="" class="bg-[#0B0F19] text-white">🌍 Général (Toutes)</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat['id'] ?? $cat['slug'] }}" class="bg-[#0B0F19] text-white font-sans">
+                                {{ $cat['icon'] }} {{ $cat['name'] }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                        <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </div>
+                </div>
                 <div class="flex justify-between items-center mt-4">
                     <label class="cursor-pointer flex items-center gap-2 text-gray-400 hover:text-cyan transition bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-bold border border-white/5">
                         <span>📷 Ajouter une image</span>

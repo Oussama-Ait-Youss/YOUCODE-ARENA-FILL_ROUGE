@@ -106,7 +106,9 @@
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-6 mb-8">
         <section class="glass-card p-6">
             <h2 class="text-2xl font-display font-bold text-white mb-4">Activité récente</h2>
-            <div class="space-y-4">
+            
+            <div class="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+                
                 @forelse($recentActivities as $activity)
                     <div class="rounded-2xl bg-black/30 p-4">
                         <div class="flex items-start gap-3">
@@ -119,7 +121,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="text-gray-500">Aucune activité récente disponible.</div>
+                    <div class="text-gray-500 text-center py-8">Aucune activité récente disponible.</div>
                 @endforelse
             </div>
         </section>
