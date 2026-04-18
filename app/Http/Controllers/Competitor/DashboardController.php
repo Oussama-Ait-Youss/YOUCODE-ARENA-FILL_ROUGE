@@ -4,35 +4,30 @@ namespace App\Http\Controllers\Competitor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
-use App\Models\Game; 
+use App\Models\Game;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = collect([
-            ['name' => 'All', 'slug' => 'all', 'icon' => '🔥']
-        ]);
+        $categories = Game::all();
 
-        
-        $dbGames = Game::all(); 
+        $active_category = $request->query('category');
 
-        foreach ($dbGames as $game) {
-            $categories->push([
-                'name' => $game->name,
-                
-                'slug' => Str::slug($game->name), 
-                
-                'icon' => '' 
-            ]);
+        $posts = Post::with(['author', 'comments', 'category'])
+            ->latest();
+
+        if ($active_category) {
+            $posts->where('category_id', (int) $active_category);
         }
 
-        
-        $active_category = $request->query('category', 'all');
+        $posts = $posts->get();
 
-        $posts = Post::with(['author', 'comments'])->latest()->get();
-
-        return view('competitor.dashboard', compact('posts', 'categories', 'active_category'));
+        return view('competitor.dashboard', compact(
+            'posts',
+            'categories',
+            'active_category'
+        ));
     }
 }

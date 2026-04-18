@@ -11,7 +11,8 @@ class Post extends Model
         'challenge_id', 
         'match_id', 
         'image_path',
-        'content'
+        'content',
+        'category_id'
     ];
 
   
@@ -24,5 +25,9 @@ class Post extends Model
     {
         return $this->hasMany(Comment::class)->latest();
     }
+    public function category()
+{
+    return $this->belongsTo(Category::class);
+}
     
 }
