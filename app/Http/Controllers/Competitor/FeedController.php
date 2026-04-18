@@ -8,41 +8,44 @@ use Illuminate\Http\Request;
 
 class FeedController extends Controller
 {
-    public function index()
-    {
-        
-        $posts = Post::with(['author', 'comments.author'])
-                     ->latest() 
-                     ->get();
+    public function index(Request $request)
+{
+    $active_category = $request->query('category');
 
-        return view('competitor.feed.index', compact('posts'));
+    $query = Post::with(['author', 'comments.author'])->latest();
+
+    if ($active_category) {
+    $query->where('category_id', (int) $active_category);
     }
 
-    public function store(Request $request)
-    {
-        abort_unless(
-            auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Organisateur'),
-            403,
-            'Seuls les organisateurs et les admins peuvent publier sur le Competition Hub.'
-        );
+    $posts = $query->get();
+    
+    $categories = \Illuminate\Support\Facades\DB::table('categories')->get();
 
-        $request->validate([
-            'content' => 'required|string|max:500',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+    return view('competitor.feed.index', compact('posts', 'categories', 'active_category'));
+}
+
+public function store(Request $request)
+{
+
+    $request->validate([
+        'content' => 'required|string|max:500',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'category_id' => 'nullable|exists:categories,id', 
+    ]);
 
     $imagePath = null;
     if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('posts', 'public');
     }
 
-        Post::create([
-            'author_id' => auth()->id(),
-            'content' => $request->content,
-            'image_path' => $imagePath,
-            
-        ]);
+    Post::create([
+        'author_id' => auth()->id(),
+        'content' => $request->content,
+        'image_path' => $imagePath,
+        'category_id' => $request->category_id, 
+    ]);
 
-        return redirect()->back()->with('success', 'Message publié avec succès !');
-    }
+    return redirect()->back()->with('success', 'Message publié avec succès !');
+}
 }

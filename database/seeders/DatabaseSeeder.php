@@ -25,19 +25,25 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('categories')->insert([
-            ['id' => 1, 'name' => 'e-sport', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'name' => 'Sport Physique', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'name' => 'Hackathon', 'created_at' => $now, 'updated_at' => $now],
-        ]);
+    ['name' => 'League of Legends', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'Valorant', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'Babyfoot', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'Chess (Échecs)', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'Ping-Pong', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'Billiard', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'FIFA', 'created_at' => $now, 'updated_at' => $now],
+    ['name' => 'Football', 'created_at' => $now, 'updated_at' => $now],
+]);
 
         DB::table('games')->insert([
             ['id' => 1, 'name' => 'League of Legends', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 2, 'name' => 'Valorant', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 3, 'name' => 'Babyfoot', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 4, 'name' => 'Chess (Échecs)', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 5, 'name' => 'Hackathon Web', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 6, 'name' => 'Ping-Pong', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 7, 'name' => 'Échecs Blitz', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 5, 'name' => 'Ping-Pong', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 6, 'name' => 'Billiard', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 7, 'name' => 'FIFA', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 8, 'name' => 'Football', 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         // ---------------------------------------------------
