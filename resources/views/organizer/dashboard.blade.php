@@ -183,12 +183,12 @@
                 <a href="{{ route('competitor.profile') }}" class="text-gray-400 hover:text-white font-display tracking-wider text-lg transition-colors">MON PROFIL</a>
                 
                 <a href="{{ route('organizer.dashboard') }}" class="text-gold font-display tracking-wider text-lg relative flex items-center gap-1">
-                    👑 MES TOURNOIS
+                     MES TOURNOIS
                     <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gold shadow-[0_0_10px_rgba(255,215,0,0.5)]"></span>
                 </a>
 
                 @if(auth()->user()->hasRole('Admin'))
-                    <a href="{{ route('admin.dashboard') }}" class="text-cyan hover:text-white font-display tracking-wider text-lg transition-colors flex items-center gap-1">🛡️ ADMINISTRATION</a>
+                    <a href="{{ route('admin.dashboard') }}" class="text-cyan hover:text-white font-display tracking-wider text-lg transition-colors flex items-center gap-1"> ADMINISTRATION</a>
                 @endif
             </div>
 
@@ -273,19 +273,19 @@
             <div class="mt-4 pt-4 border-t border-white/5">
                 
                 <button onclick="openTournamentView('{{ addslashes($tournament->title) }}', '{{ $tournament->id }}')" class="w-full bg-white/5 hover:bg-gold hover:text-black border border-white/10 text-gold font-bold py-2 rounded transition mb-3">
-                    Panneau de Contrôle ⚙️
+                    Panneau de Contrôle 
                 </button>
 
                 <div class="grid grid-cols-2 gap-3">
                     <a href="{{ route('organizer.tournaments.edit', $tournament->id) }}" class="text-center bg-cyan/10 border border-cyan/20 hover:bg-cyan hover:text-black text-cyan text-sm font-bold py-2 rounded transition">
-                        ✏️ Modifier
+                         Modifier
                     </a>
                     
                     <form action="{{ route('organizer.tournaments.destroy', $tournament->id) }}" method="POST" class="m-0" onsubmit="return confirm('Es-tu sûr de vouloir supprimer définitivement ce tournoi ? Tous les matchs seront perdus.');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="w-full text-center bg-crimson/10 border border-crimson/20 hover:bg-crimson hover:text-white text-crimson text-sm font-bold py-2 rounded transition">
-                            🗑️ Supprimer
+                             Supprimer
                         </button>
                     </form>
                 </div>
@@ -294,7 +294,7 @@
         </div>
     @empty
         <div class="col-span-full glass-card p-12 rounded-xl text-center border border-dashed border-white/20">
-            <div class="text-4xl mb-4">📭</div>
+            <div class="text-4xl mb-4"></div>
             <h3 class="text-xl font-display font-bold text-white mb-2">Aucune compétition active</h3>
             <p class="text-gray-500 mb-6">Tu n'as pas encore créé de tournoi. C'est le moment de lancer l'arène !</p>
             <a href="{{ route('organizer.tournaments.create') }}" class="inline-block bg-gold hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold transition shadow-[0_0_15px_rgba(255,215,0,0.3)]">
@@ -322,8 +322,8 @@
             </div>
 
             <div class="flex border-b border-white/10 mb-6 gap-6">
-                <button onclick="switchTab('participants')" id="tab-participants" class="pb-3 font-bold text-cyan border-b-2 border-cyan px-2 transition">👥 Participants</button>
-                <button onclick="switchTab('bracket')" id="tab-bracket" class="pb-3 font-bold text-gray-500 border-b-2 border-transparent hover:text-white px-2 transition">🏆 Arbre (Map)</button>
+                <button onclick="switchTab('participants')" id="tab-participants" class="pb-3 font-bold text-cyan border-b-2 border-cyan px-2 transition"> Participants</button>
+                <button onclick="switchTab('bracket')" id="tab-bracket" class="pb-3 font-bold text-gray-500 border-b-2 border-transparent hover:text-white px-2 transition"> Arbre (Map)</button>
             </div>
 
             <div id="tab-content-participants" class="block fade-in">
@@ -409,7 +409,6 @@
                                 </div>
                             </div>
 
-                            <!-- Final Winner -->
                             <div class="clean-round justify-center">
                                 <div class="flex flex-col items-center gap-6">
                                     <div class="clean-team-node text-center w-48 bg-gold text-black border-l-black">WINNER</div>
@@ -431,30 +430,24 @@
     </div>
 
     <script>
-        // SPA : Passer de la vue Dashboard à la vue d'un Tournoi
 
         function closeTournamentView() {
             document.getElementById('view-tournament').classList.add('hidden');
             document.getElementById('view-dashboard').classList.remove('hidden');
         }
 
-        // SPA : Changer d'onglet dans le panneau du tournoi
         function switchTab(tabName) {
-            // Cacher tous les contenus
             ['participants', 'bracket'].forEach(t => {
                 document.getElementById('tab-content-' + t).classList.add('hidden');
                 document.getElementById('tab-' + t).className = "pb-3 font-bold text-gray-500 border-b-2 border-transparent hover:text-white px-2 transition";
             });
             
-            // Afficher le bon
             document.getElementById('tab-content-' + tabName).classList.remove('hidden');
             
-            // Style de l'onglet actif
             let colorClass = tabName === 'participants' ? 'text-cyan border-cyan' : 'text-gold border-gold';
             document.getElementById('tab-' + tabName).className = `pb-3 font-bold ${colorClass} border-b-2 px-2 transition`;
         }
 
-        // Simulation d'acceptation/refus avec Toast
         function acceptRow(btn) {
             btn.closest('tr').remove();
             showToast('Candidature acceptée ! Le joueur a été ajouté.');
@@ -476,17 +469,15 @@
             }, 3000);
         }
 
-        // --- DRAG AND DROP BRACKET LOGIC ---
         let currentTournamentId = null;
 
         function openTournamentView(title, tournamentId) {
-            currentTournamentId = tournamentId; // Store for AJAX request
+            currentTournamentId = tournamentId; 
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-tournament').classList.remove('hidden');
             document.getElementById('panel-title').innerText = title;
-            switchTab('participants'); // Default tab
+            switchTab('participants'); 
 
-            // Fetch dynamic data for this tournament
             fetch(`/organizer/tournaments/${tournamentId}/data`)
                 .then(res => res.json())
                 .then(data => {
@@ -495,9 +486,7 @@
                         list.innerHTML = '';
                         
                         data.teams.forEach(team => {
-                            // Check if this team is already placed in a match (server side or just build it here)
-                            // For simplicity, we just list all teams in the sidebar. 
-                            // In a real app we'd filter out ones already in data.matches.
+                       
                             
                             const div = document.createElement('div');
                             div.className = 'clean-team-node cursor-grab active:cursor-grabbing bg-gray-700 w-full text-white team-drag';
@@ -507,7 +496,6 @@
                             div.ondragstart = handleDragStart;
                             div.innerText = team.name;
 
-                            // If team is not yet in data.matches, append it to sidebar
                             let isPlaced = false;
                             data.matches.forEach(m => {
                                 if(m.team1_id === team.id || m.team2_id === team.id) isPlaced = true;
@@ -519,8 +507,6 @@
 
                         });
 
-                        // Now dynamically restore matches into the bracket map
-                        // (Requires resetting all slots to 'TBD' first)
                         document.querySelectorAll('.clean-match[data-match-id]').forEach(matchEl => {
                             const matchIdStr = matchEl.getAttribute('data-match-id');
                             const matchData = data.matches.find(m => String(m.id) === matchIdStr);
@@ -538,7 +524,6 @@
                                     if(matchData.team1_id) injectTeamToSlot(slot1, data.teams.find(t=>t.id===matchData.team1_id));
                                     if(matchData.team2_id) injectTeamToSlot(slot2, data.teams.find(t=>t.id===matchData.team2_id));
 
-                                    // Winner button simple logic (only show if both teams are present and no winner yet)
                                     if(matchData.team1_id && matchData.team2_id && !matchData.winner_team_id) {
                                         addWinnerButton(slot1, matchData.id, matchData.team1_id);
                                         addWinnerButton(slot2, matchData.id, matchData.team2_id);
@@ -593,7 +578,6 @@
             .then(data => {
                 if(data.success) {
                     showToast('Gagnant déclaré !', 'success');
-                    // refresh bracket purely by recalling openTournamentView
                     openTournamentView(document.getElementById('panel-title').innerText, currentTournamentId);
                 } else {
                     showToast(data.message, 'crimson');
@@ -633,12 +617,9 @@
             
             if (!dropzone) return;
 
-            // Prevent drag inside same dropzone
             if (dropzone.contains(draggableElement)) return;
 
-            // If dropzone is a slot, append and update DB
             if (dropzone.classList.contains('dropzone')) {
-                // Clear existing text "TBD" if any
                 if(dropzone.innerText === "TBD") dropzone.innerText = "";
                 
                 dropzone.appendChild(draggableElement);
@@ -648,12 +629,10 @@
                 const teamId = draggableElement.getAttribute('data-team-id');
                 saveBracketPosition(matchId, slotKey, teamId);
             } 
-            // If dragging back to sidebar
             else if (dropzone.id === 'bracket-participants-list') {
                 dropzone.appendChild(draggableElement);
                 draggableElement.classList.replace('bg-gold', 'bg-gray-700');
                 draggableElement.classList.replace('text-black', 'text-white');
-                // Could trigger an unassign request here if needed
             }
         }
 
@@ -674,8 +653,8 @@
                 },
                 body: JSON.stringify({
                     match_id: matchId,
-                    slot: slotKey,      // 'team1_id' or 'team2_id'
-                    team_id: teamId     // ID of the team/player
+                    slot: slotKey,     
+                    team_id: teamId   
                 })
             })
             .then(response => response.json())

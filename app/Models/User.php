@@ -89,6 +89,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class, 'author_id');
     }
+    public function registrations() {
+    return $this->hasMany(Registration::class);
+}
+
+
 
     public function comments(): HasMany
     {
@@ -99,6 +104,7 @@ class User extends Authenticatable
     {
         return $this->roles->pluck('name')->first() ?? 'Compétiteur';
     }
+    
 
     public function assignRole(string $roleName, ?int $assignedBy = null): void
     {

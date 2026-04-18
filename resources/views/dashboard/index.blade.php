@@ -50,8 +50,8 @@
 
 <div class="container">
     <div class="nav-links">
-        <a href="{{ route('competitor.tournaments.index') }}">🎮 Explorer les Tournois</a>
-        <a href="{{ route('competitor.leaderboard') }}">🏆 Voir le Leaderboard</a>
+        <a href="{{ route('competitor.tournaments.index') }}"> Explorer les Tournois</a>
+        <a href="{{ route('competitor.leaderboard') }}"> Voir le Leaderboard</a>
     </div>
 
     <div class="profile-header">
@@ -84,7 +84,7 @@
 
     <div class="dashboard-grid">
         <div>
-            <h2>🛡️ Mes Équipes & Inscriptions</h2>
+            <h2> Mes Équipes & Inscriptions</h2>
             @forelse($myTeams as $team)
                 <div class="card">
                     <h3 class="card-title">{{ $team->name }}</h3>
@@ -103,7 +103,7 @@
             @forelse($upcomingMatches as $match)
                 <div class="card">
                     <p class="card-subtitle" style="color: var(--gray); font-size: 0.8rem; margin-bottom: 5px;">
-                        📅 {{ \Carbon\Carbon::parse($match->played_at)->format('d M Y à H:i') }}
+                         {{ \Carbon\Carbon::parse($match->played_at)->format('d M Y à H:i') }}
                     </p>
                     <h3 class="card-title" style="font-size: 0.9rem;">{{ $match->tournament->title ?? 'Tournoi' }}</h3>
                     

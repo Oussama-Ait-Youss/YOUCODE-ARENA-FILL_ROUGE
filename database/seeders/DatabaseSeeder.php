@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
         // ---------------------------------------------------
         
         // Admin
-        $adminId = DB::table('users')->insertGetId(['username' => 'GodModeAdmin', 'email' => 'admin@youcode.ma', 'password' => $password, 'created_at' => $now, 'updated_at' => $now]);
+        $adminId = DB::table('users')->insertGetId(['username' => 'Admin', 'email' => 'admin@youcode.ma', 'password' => $password, 'created_at' => $now, 'updated_at' => $now]);
         DB::table('user_roles')->insert(['user_id' => $adminId, 'role_id' => 1, 'assigned_at' => $now]);
 
         // 7 Organisateurs distincts (1 pour chaque tournoi)
@@ -67,7 +67,6 @@ class DatabaseSeeder extends Seeder
             $organizerIds[] = $orgId;
         }
 
-        // 40 Compétiteurs
         $competitorIds = [];
         for ($i = 1; $i <= 40; $i++) {
             $userId = DB::table('users')->insertGetId([
