@@ -1,59 +1,174 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+#  YouCode Arena
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**YouCode Arena** is a centralized web platform developed with **Laravel** for managing competitive events such as e-sports tournaments, hackathons, and physical competitions.
 
-## About Laravel
+It digitizes the entire tournament lifecycle — from registration to bracket tracking — while ensuring data integrity and enforcing participation rules.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+##  Table of Contents
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Overview
+- Core Objectives
+- Technology Stack
+- RBAC & User Roles
+- Key Features
+- Business Rules
+- Installation Guide
+- Project Structure
+- Future Roadmap (V2)
+- Developer
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🔍 Overview
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+YouCode Arena replaces informal tools like Discord and WhatsApp with a centralized, secure, and automated platform.
 
-## Laravel Sponsors
+It provides:
+- Tournament creation & management
+- Team formation & invitations
+- Real-time bracket tracking
+- Community interaction
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+##  Core Objectives
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+| Objective         | Description |
+|------------------|------------|
+| Centralization   | Manage all events from a single platform |
+| Automation       | Automate registrations, quotas, and validation |
+| Reliability      | Ensure data integrity and prevent duplicates |
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+##  Technology Stack
 
-## Code of Conduct
+| Layer        | Technologies |
+|-------------|-------------|
+| Backend     | Laravel 11 (PHP 8.2+) |
+| Database    | MySQL |
+| Frontend    | Blade, Tailwind CSS (Dark Mode) |
+| DevOps      | Docker (Laravel Sail), Git Flow |
+| Security    | Bcrypt / Argon2, CSRF protection, XSS & SQL injection prevention |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+##  RBAC & User Roles
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Role | Permissions |
+|------|-----------|
+| Admin | Manage users, assign roles, delete tournaments |
+| Organizer | Create tournaments, manage lifecycle, validate matches |
+| Competitor | Join tournaments, create teams, track stats |
+| Jury | View competitor data (read-only) |
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+##  Key Features
+
+### 1. Competition Hub
+- Social feed for announcements
+- Category filtering
+- Comment system
+
+### 2. Tournament Management
+- Real-time quota control
+- Challenge vs Match system
+- Visual bracket system (Round of 16 → Final)
+
+### 3. Team System
+- Team creation (Duo / Squad)
+- Email invitations
+- Automatic team dissolution if a member leaves
+
+### 4. Competitor Dashboard
+- Win rate tracking
+- Match history
+- Active tournaments overview
+
+---
+
+##  Business Rules
+
+1. Maximum participant limit enforced
+2. One registration per user per tournament
+3. No registration after event date
+4. Only complete teams can participate
+
+---
+
+##  Installation Guide
+
+### Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL
+
+### Setup Steps
+
+```bash
+# Clone repository
+git clone https://github.com/Oussama-Ait-Youss/YOUCODE-ARENA-FILL_ROUGE.git
+cd youcode-arena
+
+# Install dependencies
+composer install
+npm install
+npm run build
+
+# Environment setup
+cp .env.example .env
+php artisan key:generate
+
+# Configure database then run:
+php artisan migrate --seed
+
+# Storage link
+php artisan storage:link
+
+# Run server
+php artisan serve
+```
+
+---
+
+##  Project Structure
+
+```
+youcode-arena/
+├── app/
+│   ├── Http/Controllers/
+│   ├── Models/
+│   └── Policies/
+├── database/
+│   ├── migrations/
+│   └── seeders/
+├── resources/
+│   ├── views/
+│   └── css/
+├── routes/
+│   ├── web.php
+│   └── api.php
+├── public/
+├── .env.example
+└── README.md
+```
+
+---
+
+## Future Roadmap (V2)
+
+- Gamification system (points & leaderboard)
+- Automatic bracket generator
+- Email & push notifications
+- Tournament history archive
+
+---
+
+##  Developer
+
+**Oussama Ait Youss**  
+YouCode - UM6P / Youssoufia

@@ -43,7 +43,7 @@
     <main class="max-w-7xl mx-auto px-6 py-10">
         <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
             <div>
-                <a href="{{ route('organizer.dashboard') }}" class="text-sm text-gray-500 hover:text-gold transition">← Retour à l'espace organisateur</a>
+                <a href="{{ route('dashboard') }}" class="text-sm text-gray-500 hover:text-gold transition">← Retour à l'espace organisateur</a>
                 <h1 class="text-5xl font-display font-bold text-white tracking-wider mt-2">MES TOURNOIS</h1>
                 <p class="text-gray-400">Vue opérationnelle de tes compétitions, inscriptions et matchs.</p>
             </div>
