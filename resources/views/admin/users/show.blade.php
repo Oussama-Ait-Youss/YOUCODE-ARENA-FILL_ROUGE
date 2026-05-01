@@ -79,7 +79,6 @@
                         <select name="role" class="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white">
                             <option value="Compétiteur" @selected($roleName === 'Compétiteur')>Compétiteur</option>
                             <option value="Organisateur" @selected($roleName === 'Organisateur')>Organisateur</option>
-                            <option value="Jury" @selected($roleName === 'Jury')>Jury</option>
                         </select>
                     </div>
                     <button type="submit" class="rounded-xl bg-cyan hover:bg-[#00d7e6] text-black px-5 py-3 font-bold transition">

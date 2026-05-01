@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('registrations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->contrained('users')->cascadeOnDelete();
-            $table->foreignId('tournament_id')->contrained('tournaments')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('tournament_id')->constrained('tournaments')->cascadeOnDelete();
             $table->dateTime('registration_date')->useCurrent();
-            $table->string('status');
+            $table->string('status')->default('En attente');
             $table->timestamps();
+
+            $table->unique(['user_id', 'tournament_id']);
         });
     }
 

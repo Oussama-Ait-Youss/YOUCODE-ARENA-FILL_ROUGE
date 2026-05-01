@@ -96,6 +96,9 @@
                         <a href="{{ route('organizer.tournaments.edit', $tournament) }}" class="px-4 py-2 rounded-lg bg-cyan/10 text-cyan border border-cyan/20 hover:bg-cyan hover:text-black transition font-bold text-sm">
                             Modifier
                         </a>
+                        <a href="{{ route('organizer.tournaments.show', $tournament) }}" class="px-4 py-2 rounded-lg bg-gold/10 text-gold border border-gold/20 hover:bg-gold hover:text-black transition font-bold text-sm">
+                            Inscriptions
+                        </a>
                         <a href="{{ route('organizer.matches.index', $tournament) }}" class="px-4 py-2 rounded-lg bg-white/5 text-white border border-white/10 hover:border-gold hover:text-gold transition font-bold text-sm">
                             Matchs & arbre
                         </a>

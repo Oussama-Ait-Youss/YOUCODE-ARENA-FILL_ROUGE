@@ -137,6 +137,15 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Statut</label>
+                    <select name="status" required class="w-full bg-[#0B0F19] border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition appearance-none">
+                        @foreach(['À venir', 'Ouvert', 'Fermé', 'Terminé'] as $status)
+                            <option value="{{ $status }}" {{ old('status', $tournament->status) === $status ? 'selected' : '' }}>{{ $status }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <button type="submit" class="w-full bg-cyan hover:bg-[#00d0dd] text-black font-display font-bold text-xl tracking-widest uppercase py-3 rounded-lg transition shadow-[0_0_15px_rgba(0,240,255,0.3)] mt-4">
                     Sauvegarder les modifications
                 </button>

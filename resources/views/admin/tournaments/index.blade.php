@@ -85,7 +85,12 @@
                             </td>
                             <td class="px-5 py-4 text-gray-300">{{ $tournament->game->name ?? 'Jeu inconnu' }}</td>
                             <td class="px-5 py-4 text-gray-300">{{ $tournament->organizer->username ?? 'Non assigné' }}</td>
-                            <td class="px-5 py-4 text-gray-300">{{ $tournament->confirmed_registrations_count }}/{{ $tournament->max_capacity }}</td>
+                            <td class="px-5 py-4 text-gray-300">
+                                {{ $tournament->confirmed_registrations_count }}/{{ $tournament->max_capacity }}
+                                @if($tournament->pending_registrations_count > 0)
+                                    <div class="text-xs text-warning font-bold mt-1">{{ $tournament->pending_registrations_count }} en attente</div>
+                                @endif
+                            </td>
                             <td class="px-5 py-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold {{ $tournament->status === 'Ouvert' ? 'bg-success/10 text-success' : ($tournament->status === 'Terminé' ? 'bg-gold/10 text-gold' : 'bg-white/5 text-gray-300') }}">
                                     {{ $tournament->status }}
@@ -96,6 +101,9 @@
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('admin.tournaments.edit', $tournament) }}" class="rounded-xl border border-cyan/20 bg-cyan/10 px-4 py-2 font-bold text-cyan hover:bg-cyan hover:text-black transition">
                                         Modifier
+                                    </a>
+                                    <a href="{{ route('organizer.tournaments.show', $tournament) }}" class="rounded-xl border border-success/20 bg-success/10 px-4 py-2 font-bold text-success hover:bg-success hover:text-black transition">
+                                        Inscriptions
                                     </a>
                                     <a href="{{ route('organizer.matches.index', $tournament) }}" class="rounded-xl border border-gold/20 bg-gold/10 px-4 py-2 font-bold text-gold hover:bg-gold hover:text-black transition">
                                         Arbre & matchs

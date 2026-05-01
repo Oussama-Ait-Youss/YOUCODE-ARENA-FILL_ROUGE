@@ -22,7 +22,8 @@ class TournamentsController extends Controller
         $tournaments = Tournament::query()
             ->with(['organizer', 'game'])
             ->withCount([
-                'registrations as confirmed_registrations_count' => fn ($query) => $query->whereIn('status', ['Confirmé', 'Accepté']),
+                'registrations as confirmed_registrations_count' => fn ($query) => $query->where('status', 'Confirmé'),
+                'registrations as pending_registrations_count' => fn ($query) => $query->where('status', 'En attente'),
             ])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($innerQuery) use ($search) {

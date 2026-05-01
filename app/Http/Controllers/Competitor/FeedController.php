@@ -3,49 +3,52 @@
 namespace App\Http\Controllers\Competitor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Game;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
 class FeedController extends Controller
 {
     public function index(Request $request)
-{
-    $active_category = $request->query('category');
+    {
+        $activeGame = $request->query('game');
 
-    $query = Post::with(['author', 'comments.author'])->latest();
+        $query = Post::with(['author', 'comments.author', 'game'])->latest();
 
-    if ($active_category) {
-    $query->where('category_id', (int) $active_category);
+        if ($activeGame) {
+            $query->where('game_id', (int) $activeGame);
+        }
+
+        $posts = $query->get();
+        $games = Game::orderBy('name')->get();
+
+        return view('competitor.feed.index', compact('posts', 'games', 'activeGame'));
     }
 
-    $posts = $query->get();
-    
-    $categories = \Illuminate\Support\Facades\DB::table('categories')->get();
+    public function store(Request $request)
+    {
+        abort_unless(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Organisateur'), 403);
 
-    return view('competitor.feed.index', compact('posts', 'categories', 'active_category'));
-}
+        $validated = $request->validate([
+            'content' => 'required|string|max:500',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'game_id' => 'nullable|exists:games,id',
+        ]);
 
-public function store(Request $request)
-{
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('posts', 'public');
+        }
 
-    $request->validate([
-        'content' => 'required|string|max:500',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'category_id' => 'nullable|exists:categories,id', 
-    ]);
+        Post::create([
+            'author_id' => auth()->id(),
+            'content' => $validated['content'],
+            'image_path' => $imagePath,
+            'game_id' => $validated['game_id'] ?? null,
+        ]);
 
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('posts', 'public');
+        return redirect()
+            ->route('dashboard', array_filter(['game' => $validated['game_id'] ?? null]))
+            ->with('success', 'Message publié avec succès !');
     }
-
-    Post::create([
-        'author_id' => auth()->id(),
-        'content' => $request->content,
-        'image_path' => $imagePath,
-        'category_id' => $request->category_id, 
-    ]);
-
-    return redirect()->back()->with('success', 'Message publié avec succès !');
-}
 }

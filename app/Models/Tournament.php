@@ -57,7 +57,7 @@ class Tournament extends Model
     public function getRegisteredCountAttribute(): int
     {
         return $this->registrations()
-            ->whereIn('status', ['Confirmé', 'Accepté'])
+            ->where('status', 'Confirmé')
             ->count();
     }
 

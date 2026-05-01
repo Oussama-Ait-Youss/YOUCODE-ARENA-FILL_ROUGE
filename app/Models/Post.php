@@ -8,11 +8,10 @@ class Post extends Model
 {
     protected $fillable = [
         'author_id', 
-        'challenge_id', 
-        'match_id', 
+        'game_id',
+        'match_id',
         'image_path',
         'content',
-        'category_id'
     ];
 
   
@@ -25,9 +24,9 @@ class Post extends Model
     {
         return $this->hasMany(Comment::class)->latest();
     }
-    public function category()
-{
-    return $this->belongsTo(Category::class);
-}
+    public function game()
+    {
+        return $this->belongsTo(Game::class);
+    }
     
 }

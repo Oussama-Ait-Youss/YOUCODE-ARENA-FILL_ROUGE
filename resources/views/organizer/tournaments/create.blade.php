@@ -136,6 +136,15 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Statut initial</label>
+                    <select name="status" required class="w-full bg-[#0B0F19] border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition appearance-none">
+                        <option value="À venir" {{ old('status', 'À venir') === 'À venir' ? 'selected' : '' }}>À venir</option>
+                        <option value="Ouvert" {{ old('status') === 'Ouvert' ? 'selected' : '' }}>Ouvert</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Un organisateur ne peut avoir qu'un seul tournoi ouvert à la fois.</p>
+                </div>
+
                 <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-display font-bold text-xl tracking-widest uppercase py-3 rounded-lg transition shadow-[0_0_15px_rgba(255,215,0,0.3)] mt-4">
                     Créer le tournoi
                 </button>

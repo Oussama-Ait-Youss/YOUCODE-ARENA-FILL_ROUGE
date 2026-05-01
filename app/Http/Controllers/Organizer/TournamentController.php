@@ -17,7 +17,7 @@ class TournamentController extends Controller
     public function index(){
         $tournaments = Tournament::with(['game'])
             ->withCount([
-                'registrations as confirmed_registrations_count' => fn ($query) => $query->whereIn('status', ['Confirmé', 'Accepté']),
+                'registrations as confirmed_registrations_count' => fn ($query) => $query->where('status', 'Confirmé'),
                 'registrations as pending_registrations_count' => fn ($query) => $query->where('status', 'En attente'),
                 'matches as scheduled_matches_count',
             ])
@@ -29,10 +29,6 @@ class TournamentController extends Controller
     }
 
     public function create(){
-        if (!auth()->user()->hasRole('Admin') && \App\Models\Tournament::where('organizer_id', auth()->id())->where('status', 'Ouvert')->exists()) {
-            return redirect()->route('organizer.dashboard')
-                             ->with('error', 'Tu ne peux avoir qu\'un seul tournoi ouvert aux inscriptions à la fois.');
-        }
         $games = Game::all();
         $categories = Category::all();
         $organizers = auth()->user()->hasRole('Admin')
@@ -49,6 +45,7 @@ class TournamentController extends Controller
             'category_id'=> 'required|exists:categories,id',
             'max_capacity'=> 'required|integer|min:2',
             'event_date'=> 'required|date|after:today',
+            'status' => 'required|in:À venir,Ouvert',
             'organizer_id' => [
                 Rule::requiredIf(auth()->user()->hasRole('Admin')),
                 Rule::exists('users', 'id')->where(function ($query) {
@@ -70,7 +67,7 @@ class TournamentController extends Controller
             ? (int) $validated['organizer_id']
             : Auth::id();
 
-        $this->ensureSingleOpenTournament($organizerId, 'Ouvert');
+        $this->ensureSingleOpenTournament($organizerId, $validated['status']);
 
         Tournament::create([
             'title' => $validated['title'],
@@ -79,7 +76,7 @@ class TournamentController extends Controller
             'max_capacity' => $validated['max_capacity'],
             'event_date' => $validated['event_date'],
             'organizer_id' => $organizerId,
-            'status' => 'Ouvert', 
+            'status' => $validated['status'], 
         ]);
 
         return redirect()->route('organizer.dashboard')
@@ -97,6 +94,39 @@ class TournamentController extends Controller
 
         return redirect()->route('organizer.tournaments.index')
                          ->with('success', 'Le tournoi a été supprimé avec succès.');
+    }
+
+    public function show(Tournament $tournament)
+    {
+        if (!$this->canManageTournament($tournament)) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        $tournament->load([
+            'game',
+            'category',
+            'organizer',
+            'registrations.user',
+            'registrations.team.members',
+        ]);
+
+        $registrations = $tournament->registrations
+            ->sortBy([
+                ['status', 'desc'],
+                ['registration_date', 'asc'],
+            ])
+            ->values();
+
+        $pendingRegistrations = $registrations->where('status', 'En attente')->values();
+        $confirmedRegistrations = $registrations->where('status', 'Confirmé')->values();
+        $rejectedRegistrations = $registrations->where('status', 'Refusé')->values();
+
+        return view('organizer.tournaments.show', compact(
+            'tournament',
+            'pendingRegistrations',
+            'confirmedRegistrations',
+            'rejectedRegistrations'
+        ));
     }
 
 
