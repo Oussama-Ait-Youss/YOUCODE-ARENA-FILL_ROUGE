@@ -26,7 +26,6 @@ class DashboardController extends Controller
         $totalCompetitors = $roleCounts->get('Compétiteur')->users_count ?? 0;
         $totalOrganizers = $roleCounts->get('Organisateur')->users_count ?? 0;
         $totalAdmins = $roleCounts->get('Admin')->users_count ?? 0;
-        $totalJuries = $roleCounts->get('Jury')->users_count ?? 0;
         $totalTournaments = Tournament::count();
         $activeTournaments = Tournament::where('status', 'Ouvert')->count();
         $completedTournaments = Tournament::where('status', 'Terminé')->count();
@@ -64,11 +63,6 @@ class DashboardController extends Controller
                 'color' => 'gold',
             ],
             [
-                'label' => 'Jurys',
-                'count' => $totalJuries,
-                'color' => 'warning',
-            ],
-            [
                 'label' => 'Compétiteurs',
                 'count' => $totalCompetitors,
                 'color' => 'success',
@@ -82,7 +76,6 @@ class DashboardController extends Controller
             'totalCompetitors', 
             'totalOrganizers',
             'totalAdmins',
-            'totalJuries',
             'totalTournaments', 
             'activeTournaments', 
             'completedTournaments',
@@ -109,7 +102,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get()
             ->map(fn ($row) => [
-                'icon' => '🛡️',
+                'icon' => 'Role',
                 'title' => "{$row->username} a reçu le rôle {$row->role_name}",
                 'description' => 'Mise à jour des autorisations administratives.',
                 'at' => Carbon::parse($row->assigned_at),
@@ -120,7 +113,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(fn (User $user) => [
-                'icon' => '⛔',
+                'icon' => 'Ban',
                 'title' => "{$user->username} est actuellement banni",
                 'description' => $user->banned_reason ?: 'Compte suspendu par un administrateur.',
                 'at' => $user->updated_at,
@@ -130,7 +123,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(fn (User $user) => [
-                'icon' => '👤',
+                'icon' => 'User',
                 'title' => "{$user->username} a rejoint la plateforme",
                 'description' => $user->email,
                 'at' => $user->created_at,
@@ -141,7 +134,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(fn (Tournament $tournament) => [
-                'icon' => '🏆',
+                'icon' => 'Cup',
                 'title' => "Tournoi créé : {$tournament->title}",
                 'description' => 'Organisateur : ' . ($tournament->organizer->username ?? 'Non assigné'),
                 'at' => $tournament->created_at,
@@ -152,7 +145,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(fn (Post $post) => [
-                'icon' => '📝',
+                'icon' => 'Post',
                 'title' => 'Nouveau post dans le Competition Hub',
                 'description' => ($post->author->username ?? 'Auteur inconnu') . ' : ' . str($post->content)->limit(70),
                 'at' => $post->created_at,

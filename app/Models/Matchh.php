@@ -11,7 +11,6 @@ class Matchh extends Model
 
     protected $fillable = [
         'tournament_id', 
-        'challenge_id', 
         'team1_id', 
         'team2_id', 
         'winner_team_id', 
@@ -41,5 +40,22 @@ class Matchh extends Model
 
     public function nextMatch(): BelongsTo {
         return $this->belongsTo(self::class, 'next_match_id');
+    }
+
+    public function loserTeam(): ?Team
+    {
+        if (!$this->winner_team_id) {
+            return null;
+        }
+
+        if ($this->winner_team_id === $this->team1_id) {
+            return $this->team2;
+        }
+
+        if ($this->winner_team_id === $this->team2_id) {
+            return $this->team1;
+        }
+
+        return null;
     }
 }

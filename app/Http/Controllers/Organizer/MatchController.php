@@ -15,7 +15,10 @@ class MatchController extends Controller
     {
         abort_unless($this->canManageTournament($tournament), 403);
 
-        $teams = $tournament->teams;
+        $teams = $tournament->teams()
+            ->whereHas('registrations', fn ($query) => $query->where('status', 'Confirmé'))
+            ->with('members')
+            ->get();
         $planningMatches = $tournament->matches()
             ->with(['team1', 'team2', 'winnerTeam'])
             ->latest()
@@ -23,7 +26,8 @@ class MatchController extends Controller
 
         $bracketMatches = $tournament->matches()
             ->whereNotNull('round')
-            ->with(['team1', 'team2', 'winnerTeam', 'nextMatch'])
+
+
             ->orderBy('round')
             ->orderBy('position_in_round')
             ->get();
@@ -79,7 +83,11 @@ class MatchController extends Controller
     {
         abort_unless($this->canManageTournament($tournament), 403);
 
-        $teams = $tournament->teams()->orderBy('id')->get()->values();
+        $teams = $tournament->teams()
+            ->whereHas('registrations', fn ($query) => $query->where('status', 'Confirmé'))
+            ->orderBy('id')
+            ->get()
+            ->values();
         $teamCount = $teams->count();
 
         if ($teamCount < 2) {
@@ -118,34 +126,33 @@ class MatchController extends Controller
                 }
             }
 
-            $firstRoundMatches = collect($createdRounds[1]);
-            $byes = $bracketSize - $teamCount;
-            $fullMatches = (int) (($teamCount - $byes) / 2);
-            $teamIndex = 0;
+            $teamIds = $teams->pluck('id')->pad($bracketSize, null)->values();
+            $firstRoundMatches = collect($createdRounds[1])->values();
 
             foreach ($firstRoundMatches as $index => $match) {
-                $position = $index;
+                $team1Id = $teamIds[$index * 2] ?? null;
+                $team2Id = $teamIds[$index * 2 + 1] ?? null;
                 $payload = [
-                    'team1_id' => null,
-                    'team2_id' => null,
+                    'team1_id' => $team1Id,
+                    'team2_id' => $team2Id,
                     'winner_team_id' => null,
                     'score' => null,
                     'status' => 'En attente',
                 ];
 
-                if ($position <= $fullMatches) {
-                    $payload['team1_id'] = $teams[$teamIndex++]->id ?? null;
-                    $payload['team2_id'] = $teams[$teamIndex++]->id ?? null;
-                } else {
-                    $payload['team1_id'] = $teams[$teamIndex++]->id ?? null;
-                    $payload['team2_id'] = $teams[$teamIndex++]->id ?? null;
-                }
-
-                $payload['status'] = $payload['team1_id'] && $payload['team2_id']
+                $payload['status'] = $team1Id && $team2Id
                     ? 'Programmé'
                     : 'En attente';
 
                 $match->update($payload);
+
+                if (($team1Id && !$team2Id) || (!$team1Id && $team2Id)) {
+                    $match->update([
+                        'winner_team_id' => $team1Id ?: $team2Id,
+                        'status' => 'Terminé',
+                    ]);
+                    $this->advanceWinner($match->fresh());
+                }
             }
         });
 
@@ -171,12 +178,15 @@ class MatchController extends Controller
         }
 
         DB::transaction(function () use ($match, $request, $winner_id) {
+            $previousWinnerId = $match->winner_team_id;
+
             $match->update([
                 'score' => $request->score_team1 . ' - ' . $request->score_team2,
                 'winner_team_id' => $winner_id,
                 'status' => 'Terminé'
             ]);
 
+            $this->syncProfilesForResult($match->fresh(['team1.members', 'team2.members']), $previousWinnerId, $winner_id);
             $this->advanceWinner($match);
         });
 
@@ -240,11 +250,14 @@ class MatchController extends Controller
         );
 
         DB::transaction(function () use ($match, $validated) {
+            $previousWinnerId = $match->winner_team_id;
+
             $match->update([
                 'winner_team_id' => $validated['winner_team_id'],
                 'status' => 'Terminé',
             ]);
 
+            $this->syncProfilesForResult($match->fresh(['team1.members', 'team2.members']), $previousWinnerId, (int) $validated['winner_team_id']);
             $this->advanceWinner($match);
         });
 
@@ -323,6 +336,39 @@ class MatchController extends Controller
         $nextMatch->save();
 
         $this->normalizeMatchTree($nextMatch);
+    }
+
+    private function syncProfilesForResult(Matchh $match, ?int $previousWinnerId, ?int $newWinnerId): void
+    {
+        if (!$newWinnerId || $previousWinnerId === $newWinnerId) {
+            return;
+        }
+
+        if ($previousWinnerId) {
+            $this->applyProfileDelta($match, $previousWinnerId, -1);
+        }
+
+        $this->applyProfileDelta($match, $newWinnerId, 1);
+    }
+
+    private function applyProfileDelta(Matchh $match, int $winnerTeamId, int $direction): void
+    {
+        $winningTeam = $winnerTeamId === $match->team1_id ? $match->team1 : $match->team2;
+        $losingTeam = $winnerTeamId === $match->team1_id ? $match->team2 : $match->team1;
+
+        if (!$winningTeam || !$losingTeam) {
+            return;
+        }
+
+        foreach ($winningTeam->members as $member) {
+            $profile = $member->competitorProfile()->firstOrCreate(['user_id' => $member->id]);
+            $profile->increment('games_won', $direction);
+        }
+
+        foreach ($losingTeam->members as $member) {
+            $profile = $member->competitorProfile()->firstOrCreate(['user_id' => $member->id]);
+            $profile->increment('games_loss', $direction);
+        }
     }
 
     private function detachTeamFromOtherMatches(int $tournamentId, int $teamId, array $exceptMatchIds = []): void

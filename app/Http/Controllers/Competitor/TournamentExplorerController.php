@@ -18,7 +18,7 @@ class TournamentExplorerController extends Controller
             ->withCount('teams')
             ->withCount([
                 'registrations as confirmed_registrations_count' => fn ($registrationQuery) => $registrationQuery
-                    ->whereIn('status', ['Confirmé', 'Accepté']),
+                    ->where('status', 'Confirmé'),
             ]);
 
         switch ($currentFilter) {
@@ -62,7 +62,7 @@ class TournamentExplorerController extends Controller
             ->latest()
             ->first();
 
-        $isRegistered = (bool) $registration && in_array($registration->status, ['Confirmé', 'Accepté', 'En attente'], true);
+        $isRegistered = (bool) $registration && in_array($registration->status, ['Confirmé', 'En attente'], true);
 
         $matches = $tournament->matches
             ->sortBy([

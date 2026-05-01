@@ -14,12 +14,10 @@ return new class extends Migration
     Schema::create('matches', function (Blueprint $table) {
         $table->id();
         $table->foreignId('tournament_id')->constrained()->cascadeOnDelete();
-        $table->foreignId('challenge_id')->nullable()->constrained()->cascadeOnDelete(); 
+        $table->foreignId('team1_id')->nullable()->constrained('teams')->nullOnDelete();
+        $table->foreignId('team2_id')->nullable()->constrained('teams')->nullOnDelete();
 
-        $table->foreignId('team1_id')->constrained('teams')->cascadeOnDelete();
-        $table->foreignId('team2_id')->constrained('teams')->cascadeOnDelete();
-
-        $table->foreignId('winner_team_id')->nullable()->constrained('teams');
+        $table->foreignId('winner_team_id')->nullable()->constrained('teams')->nullOnDelete();
         $table->string('score', 50)->nullable(); 
         
         $table->string('status')->default('Programmé'); 

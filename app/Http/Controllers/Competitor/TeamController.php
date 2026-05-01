@@ -23,7 +23,7 @@ class TeamController extends Controller
             ->get();
 
         $stats = [
-            'total_tournaments' => $registrations->whereIn('status', ['Confirmé', 'Accepté'])->count(),
+            'total_tournaments' => $registrations->where('status', 'Confirmé')->count(),
             'pending_invitations' => $registrations->where('status', 'En attente')->count(),
         ];
 
@@ -52,8 +52,8 @@ class TeamController extends Controller
         }
 
         $alreadyRegistered = Registration::where('user_id', Auth::id())
-                                         ->where('tournament_id', $tournament->id)
-                                         ->exists();
+            ->where('tournament_id', $tournament->id)
+            ->exists();
 
         if ($alreadyRegistered) {
             return redirect()->route('competitor.tournaments.index')
@@ -63,12 +63,21 @@ class TeamController extends Controller
         $isDuo = $tournament->game?->requiresTeamInvite() ?? false;
 
         $request->validate([
-            'name' => 'required|string|max:255|unique:teams,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('teams', 'name')->where('tournament_id', $tournament->id),
+            ],
             'partner_email' => $isDuo ? 'nullable|email|exists:users,email' : 'nullable',
         ], [
             'name.unique' => 'Ce nom d\'équipe est déjà pris par d\'autres joueurs.',
             'partner_email.exists' => 'Aucun joueur trouvé avec cet email sur YouCode Arena.'
         ]);
+
+        if ($request->filled('partner_email') && $request->partner_email === Auth::user()->email) {
+            return back()->withErrors(['partner_email' => 'Tu ne peux pas t\'inviter toi-même.'])->withInput();
+        }
 
         $requestedSeats = 1 + (filled($request->partner_email) ? 1 : 0);
 
@@ -78,7 +87,7 @@ class TeamController extends Controller
                 ->with('error', 'Le quota du tournoi est atteint pour cette inscription.');
         }
 
-        $message = 'Inscription validée. Bonne chance dans l\'arène.';
+        $message = 'Inscription enregistrée en attente de validation par l’organisateur.';
 
         DB::transaction(function () use ($request, $tournament, &$message) {
             $team = Team::create([
@@ -91,17 +100,13 @@ class TeamController extends Controller
             Registration::create([
                 'user_id' => Auth::id(),
                 'tournament_id' => $tournament->id,
-                'status' => 'Confirmé',
+                'team_id' => $team->id,
+                'status' => 'En attente',
                 'registration_date' => now(),
             ]);
 
             if ($request->filled('partner_email')) {
                 $partner = User::where('email', $request->partner_email)->first();
-
-                if ($partner && $partner->id === Auth::id()) {
-                    $message = 'Inscription solo enregistrée. Tu ne peux pas t\'inviter toi-même.';
-                    return;
-                }
 
                 $partnerAlreadyRegistered = $partner
                     ? Registration::where('user_id', $partner->id)
@@ -110,17 +115,17 @@ class TeamController extends Controller
                     : false;
 
                 if ($partner && !$partnerAlreadyRegistered) {
-$team->members()->attach($partner->id, ['joined_at' => now()]);
                     Registration::create([
                         'user_id' => $partner->id,
                         'tournament_id' => $tournament->id,
+                        'team_id' => $team->id,
                         'status' => 'En attente',
                         'registration_date' => now(),
                     ]);
 
-                    $message = 'Équipe créée. Invitation envoyée à ' . $partner->username . '.';
+                    $message = 'Équipe créée. Invitation envoyée à ' . $partner->username . '. Les inscriptions restent en attente de validation organisateur.';
                 } elseif ($partner) {
-                    $message = 'Ton inscription est confirmée, mais ce coéquipier participe déjà à ce tournoi.';
+                    $message = 'Ton inscription est en attente, mais ce coéquipier participe déjà à ce tournoi.';
                 }
             }
         });
@@ -138,6 +143,10 @@ $team->members()->attach($partner->id, ['joined_at' => now()]);
 
         if (!$registration) {
             return redirect()->back()->with('error', 'Vous n\'êtes pas inscrit à ce tournoi.');
+        }
+
+        if ($tournament->status === 'En cours' || $tournament->status === 'Terminé' || $tournament->event_date->isPast()) {
+            return redirect()->back()->with('error', 'Tu ne peux plus quitter un tournoi déjà commencé.');
         }
 
         DB::transaction(function () use ($user, $tournament, $registration) {
@@ -165,32 +174,47 @@ $team->members()->attach($partner->id, ['joined_at' => now()]);
     {
         $userId = auth()->id();
 
-        Registration::where('user_id', $userId)
+        $registration = Registration::where('user_id', $userId)
             ->where('tournament_id', $tournament->id)
-            ->update(['status' => 'Confirmé']);
+            ->where('status', 'En attente')
+            ->with('team')
+            ->firstOrFail();
 
-        DB::table('team_members')
-            ->where('user_id', $userId)
-            ->whereIn('team_id', function ($query) use ($tournament) {
-                $query->select('id')->from('teams')->where('tournament_id', $tournament->id);
-            })
-            ->update(['joined_at' => now()]);
+        if (!$registration->team_id) {
+            return back()->with('info', 'Ton inscription est déjà en attente de validation organisateur.');
+        }
 
-        return back()->with('success', 'Vous avez rejoint le tournoi !');
+        if (
+            DB::table('team_members')
+                ->where('team_id', $registration->team_id)
+                ->where('user_id', $userId)
+                ->exists()
+        ) {
+            return back()->with('info', 'Ton inscription est déjà en attente de validation organisateur.');
+        }
+
+        DB::table('team_members')->updateOrInsert(
+            ['team_id' => $registration->team_id, 'user_id' => $userId],
+            ['joined_at' => now(), 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        return back()->with('success', 'Invitation acceptée. Ton inscription reste en attente de validation organisateur.');
     }
 
     public function declineInvite(Tournament $tournament)
     {
         $userId = auth()->id();
 
-        Registration::where('user_id', $userId)->where('tournament_id', $tournament->id)->delete();
+        $registration = Registration::where('user_id', $userId)
+            ->where('tournament_id', $tournament->id)
+            ->firstOrFail();
 
         DB::table('team_members')
             ->where('user_id', $userId)
-            ->whereIn('team_id', function ($query) use ($tournament) {
-                $query->select('id')->from('teams')->where('tournament_id', $tournament->id);
-            })
+            ->where('team_id', $registration->team_id)
             ->delete();
+
+        $registration->delete();
 
         return back()->with('success', 'Invitation refusée.');
     }

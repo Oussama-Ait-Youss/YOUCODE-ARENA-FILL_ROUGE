@@ -11,23 +11,23 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Game::all();
+        $games = Game::orderBy('name')->get();
 
-        $active_category = $request->query('category');
+        $activeGame = $request->query('game');
 
-        $posts = Post::with(['author', 'comments', 'category'])
+        $posts = Post::with(['author', 'comments.author', 'game'])
             ->latest();
 
-        if ($active_category) {
-            $posts->where('category_id', (int) $active_category);
+        if ($activeGame) {
+            $posts->where('game_id', (int) $activeGame);
         }
 
         $posts = $posts->get();
 
         return view('competitor.dashboard', compact(
             'posts',
-            'categories',
-            'active_category'
+            'games',
+            'activeGame'
         ));
     }
 }

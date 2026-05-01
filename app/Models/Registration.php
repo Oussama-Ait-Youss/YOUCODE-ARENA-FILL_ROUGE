@@ -12,8 +12,13 @@ class Registration extends Model
     protected $fillable = [
         'user_id',
         'tournament_id',
+        'team_id',
         'status',
         'registration_date'
+    ];
+
+    protected $casts = [
+        'registration_date' => 'datetime',
     ];
 
 
@@ -24,5 +29,10 @@ class Registration extends Model
 
     public function tournament(){
         return $this->belongsTo(Tournament::class);
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }

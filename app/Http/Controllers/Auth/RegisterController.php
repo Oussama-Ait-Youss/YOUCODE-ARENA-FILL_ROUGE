@@ -43,7 +43,10 @@ class RegisterController extends Controller
             $user->roles()->attach($competitorRole->id);
         }
 
-        
+        $user->competitorProfile()->create([
+            'games_won' => 0,
+            'games_loss' => 0,
+        ]);
 
         Auth::login($user);
 

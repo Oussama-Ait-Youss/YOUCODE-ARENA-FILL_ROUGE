@@ -73,9 +73,16 @@
 
     @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Organisateur'))
         <div class="post-form-card">
-            <form action="{{ route('competitor.feed.store') }}" method="POST">
+            <form action="{{ route('competitor.feed.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <textarea name="content" class="post-textarea" placeholder="Que veux-tu dire à l'arène, {{ auth()->user()->username }} ?" required></textarea>
+                <select name="game_id" class="post-textarea" style="min-height: auto;">
+                    <option value="">Tous les jeux</option>
+                    @foreach($games as $game)
+                        <option value="{{ $game->id }}">{{ $game->name }}</option>
+                    @endforeach
+                </select>
+                <input type="file" name="image" accept="image/*" style="margin-bottom: 10px;">
                 <div class="clearfix">
                     <button type="submit" class="btn-submit">Publier</button>
                 </div>
@@ -100,13 +107,19 @@
                     <div class="post-time">{{ $post->created_at->diffForHumans() }}</div>
                 </div>
 
+                @if($post->game)
+                    <div class="context-badge"> Jeu : {{ $post->game->name }}</div>
+                @endif
+
                 @if($post->match_id)
                     <div class="context-badge"> Lié à un Match</div>
-                @elseif($post->challenge_id)
-                    <div class="context-badge"> Lié à un Défi</div>
                 @endif
 
                 <div class="post-content">{{ $post->content }}</div>
+
+                @if($post->image_path)
+                    <img src="{{ asset('storage/' . $post->image_path) }}" style="width:100%; max-height: 360px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                @endif
 
                 @if($post->comments->count() > 0)
                     <div class="comments-section">

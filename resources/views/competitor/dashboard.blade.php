@@ -125,21 +125,21 @@
         
         <aside class="hidden md:block col-span-1">
             <div class="glass-card rounded-xl p-4 sticky top-24">
-                <h3 class="font-display font-bold text-gray-400 uppercase text-lg tracking-wider mb-4 border-b border-white/10 pb-2">Categories</h3>
+                <h3 class="font-display font-bold text-gray-400 uppercase text-lg tracking-wider mb-4 border-b border-white/10 pb-2">Jeux</h3>
                 <ul class="space-y-2">
                     <li>
-                        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 p-3 rounded transition font-display tracking-wide text-lg {{ !request('category') ? 'bg-white/5 text-crimson border-l-4 border-crimson' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 p-3 rounded transition font-display tracking-wide text-lg {{ !request('game') ? 'bg-white/5 text-crimson border-l-4 border-crimson' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
                              Toutes
                         </a>
                     </li>
-                    @foreach ($categories as $cat)
+                    @foreach ($games as $game)
                         @php 
-                            $isActive = request('category') == $cat->id;
+                            $isActive = request('game') == $game->id;
                             $activeClass = $isActive ? 'bg-white/5 text-crimson border-l-4 border-crimson' : 'text-gray-400 hover:text-white hover:bg-white/5'; 
                         @endphp
                         <li class="rounded cursor-pointer transition font-display tracking-wide text-lg">
-                            <a href="?category={{ $cat->id }}" class="flex items-center gap-2 p-3 {{ $activeClass }}">
-                                 {{ $cat->name }}
+                            <a href="?game={{ $game->id }}" class="flex items-center gap-2 p-3 {{ $activeClass }}">
+                                 {{ $game->name }}
                             </a>
                         </li>
                     @endforeach
@@ -155,18 +155,32 @@
                     
                     <form action="{{ route('competitor.feed.store') }}" method="POST" enctype="multipart/form-data" class="relative z-10">
                         @csrf
-                        <textarea name="content" rows="3" class="w-full bg-black/80 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-crimson transition-colors resize-none" placeholder="Que veux-tu partager avec l'Arène, {{ auth()->user()->username }} ?" required></textarea>
+                        @if(session('success'))
+                            <div class="mb-4 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm font-bold text-success">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        @if($errors->any())
+                            <div class="mb-4 rounded-lg border border-crimson/40 bg-crimson/10 px-4 py-3 text-sm text-red-200">
+                                @foreach($errors->all() as $error)
+                                    <div>{{ $error }}</div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <textarea name="content" rows="3" class="w-full bg-black/80 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-crimson transition-colors resize-none" placeholder="Que veux-tu partager avec l'Arène, {{ auth()->user()->username }} ?" required>{{ old('content') }}</textarea>
                         
                         <div class="mt-4 relative inline-block min-w-[250px]">
                             <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-crimson">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                             </div>
                             
-                            <select name="category_id" class="w-full appearance-none bg-black/60 border border-white/10 hover:border-white/20 rounded-lg pl-9 pr-10 py-2.5 text-sm font-bold tracking-wider uppercase text-gray-300 focus:outline-none focus:border-crimson transition-all cursor-pointer">
-                                <option value="" class="bg-[#0B0F19]"> Général (Toutes)</option>
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}" class="bg-[#0B0F19]">
-                                         {{ $cat->name }}
+                            <select name="game_id" class="w-full appearance-none bg-black/60 border border-white/10 hover:border-white/20 rounded-lg pl-9 pr-10 py-2.5 text-sm font-bold tracking-wider uppercase text-gray-300 focus:outline-none focus:border-crimson transition-all cursor-pointer">
+                                <option value="" class="bg-[#0B0F19]" {{ old('game_id') ? '' : 'selected' }}> Général (Toutes)</option>
+                                @foreach($games as $game)
+                                    <option value="{{ $game->id }}" class="bg-[#0B0F19]" {{ (string) old('game_id') === (string) $game->id ? 'selected' : '' }}>
+                                         {{ $game->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -206,7 +220,7 @@
                             </div>
                             <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">
                                 {{ $post->created_at->diffForHumans() }} 
-                                @if($post->category) • {{ $post->category->name }}</span> @endif
+                                @if($post->game) • {{ $post->game->name }} @endif
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,585 @@
+YouCode Arena - Project Explanation
+===================================
+
+This file explains how the current Laravel project is organized and how the main business logic works.
+It is written for a junior developer who needs to understand the code, not only use the interface.
+
+
+1. Main Roles
+-------------
+
+The platform uses three MVP roles:
+
+- Compétiteur:
+  Can browse tournaments, join tournaments, see profile/stats, comment on hub posts, and see tournament brackets.
+
+- Organisateur:
+  Has competitor abilities plus tournament management, registration approval, match scheduling, bracket generation, and score/winner management.
+
+- Admin:
+  Has global access. Admin can manage users, create/edit/delete any tournament, and use organizer screens for any tournament.
+
+The old Jury role was removed from MVP screens and role-changing logic.
+
+
+2. Important Models
+-------------------
+
+app/Models/User.php
+- Owns roles.
+- Owns registrations.
+- Can belong to many teams through team_members.
+- Has one competitorProfile for wins/losses.
+
+app/Models/Tournament.php
+- Belongs to an organizer user.
+- Belongs to a game and a category.
+- Has many registrations, teams, and matches.
+- registered_count counts only confirmed registrations.
+- is_full checks confirmed registrations against max_capacity.
+- can_register is true only when:
+  - tournament date is in the future
+  - tournament is not full
+  - status is "Ouvert"
+
+app/Models/Registration.php
+- Connects a user to a tournament.
+- Has a status:
+  - "En attente": waiting for organizer approval
+  - "Confirmé": accepted by organizer
+  - "Refusé": rejected by organizer
+- Also has team_id so we know which team this registration belongs to.
+
+app/Models/Team.php
+- Belongs to a tournament.
+- Has many members through team_members.
+- Has many registrations.
+- Even solo registrations use a team internally. This makes bracket/match logic simpler because matches are always team vs team.
+
+app/Models/Matchh.php
+- Uses the database table matches.
+- Has team1_id, team2_id, winner_team_id.
+- Has bracket fields:
+  - round
+  - position_in_round
+  - next_match_id
+- next_match_id allows the winner to move automatically into the next round.
+
+app/Models/Post.php
+- Hub posts belong to a game through game_id.
+- This is important: posts are filtered by game, not category.
+
+
+3. Tournament Joining Flow
+--------------------------
+
+The joining logic is mainly in:
+
+app/Http/Controllers/Competitor/TeamController.php
+
+The flow starts when a competitor clicks join from a tournament page.
+
+Step 1: Open join form
+- Route: competitor.tournaments.show
+- If the tournament can be joined, the button links to:
+  competitor.teams.create
+- TeamController@create checks:
+  - tournament status is "Ouvert"
+  - tournament date is not past
+  - tournament is not full
+
+Step 2: Submit join form
+- Route: competitor.teams.store
+- TeamController@store handles both solo and duo/team tournaments.
+
+Rules:
+- A user cannot register twice for the same tournament.
+- Confirmed registrations count toward capacity.
+- Pending registrations do not count toward capacity, but the system still blocks new registrations if confirmed capacity is already full.
+- All registrations start as "En attente".
+- Nobody becomes "Confirmé" immediately when joining.
+
+
+4. Solo Tournament Registration
+-------------------------------
+
+Example: Chess, FIFA, Valorant if considered solo in the current rules.
+
+When a competitor joins a solo tournament:
+
+1. A Team record is created.
+   Even though it is solo, the team exists because bracket matches use teams.
+
+2. The current user is attached to the team_members table immediately.
+
+3. A Registration is created:
+   - user_id = current user
+   - tournament_id = tournament
+   - team_id = created team
+   - status = "En attente"
+
+4. The organizer/admin must later accept this registration.
+
+Profile behavior:
+- In competitor profile, this appears under "Inscriptions en attente".
+- It does NOT appear under "Invitations Reçues".
+- There are no accept/refuse buttons because the user joined by themselves.
+
+
+5. Team Invitation Process
+--------------------------
+
+Some games require a team invite. Currently this is detected in:
+
+app/Models/Game.php
+
+Method:
+requiresTeamInvite()
+
+At the moment, a game requires a teammate if its name contains "babyfoot".
+This is simple and works for the MVP. Later, a better design would be adding a boolean column like games.requires_team.
+
+When a competitor joins a team-required tournament:
+
+1. The creator chooses a team name.
+
+2. The creator may enter partner_email.
+
+3. A Team is created.
+
+4. The creator is attached to team_members immediately.
+
+5. The creator gets a Registration with status "En attente".
+
+6. If partner_email is provided:
+   - The invited user gets a Registration with status "En attente".
+   - The invited user is NOT attached to team_members immediately.
+
+Why not attach immediately?
+- Because the invited user has not accepted yet.
+- If we attach them immediately, the system would show them as team member even if they decline.
+
+How invite acceptance works:
+
+Controller:
+app/Http/Controllers/Competitor/TeamController.php
+
+Method:
+acceptInvite()
+
+When the invited user accepts:
+- The system checks their pending registration.
+- If they are not already in the team, it attaches them to team_members.
+- Their registration still stays "En attente".
+
+Important:
+Accepting the invite is NOT the same as organizer approval.
+It only means: "Yes, I agree to join this team."
+
+The organizer still has to approve the registration later.
+
+When the invited user declines:
+- Their registration is deleted.
+- Their team_members row is deleted if it exists.
+- The team remains for the creator.
+
+
+6. Organizer/Admin Registration Approval
+----------------------------------------
+
+The approval logic is in:
+
+app/Http/Controllers/Organizer/RegistrationController.php
+
+Methods:
+- accept()
+- reject()
+
+Approval screen:
+resources/views/organizer/tournaments/show.blade.php
+
+Access paths:
+- Organizer:
+  Organizer dashboard -> tournament -> Inscriptions
+
+- Admin:
+  Administration -> Tournois -> Inscriptions
+
+Because admins pass the role middleware and canManageTournament allows admins, admins can manage registrations for any tournament.
+
+Accept behavior:
+- Confirms only one Registration at a time.
+- Changes status from "En attente" to "Confirmé".
+- Checks tournament capacity before confirming.
+- If the registration belongs to an invited teammate who has not accepted the invitation yet, the system blocks organizer approval.
+
+Reject behavior:
+- Changes status to "Refusé".
+- Removes the user from team_members for that team if needed.
+
+Capacity rule:
+- Capacity is based on confirmed registrations only.
+- Pending registrations do not count as occupied seats.
+
+
+7. Competition Hub Posts
+------------------------
+
+Controller:
+app/Http/Controllers/Competitor/FeedController.php
+
+Model:
+app/Models/Post.php
+
+Posts belong to games through posts.game_id.
+
+This fixed the old confusion:
+- Tournaments still belong to game and category.
+- Posts are filtered by game, not category.
+
+Only Admin and Organizer can publish hub posts.
+Competitors can comment but cannot create posts.
+
+Relevant views:
+- resources/views/competitor/dashboard.blade.php
+- resources/views/competitor/feed/index.blade.php
+
+
+8. Tournament Creation and One Open Tournament Rule
+--------------------------------------------------
+
+Organizer controller:
+app/Http/Controllers/Organizer/TournamentController.php
+
+Admin controller:
+app/Http/Controllers/Admin/TournamentsController.php
+
+Tournament status options include:
+- "À venir"
+- "Ouvert"
+- "Fermé"
+- "Terminé"
+
+When creating a tournament as organizer:
+- The organizer can choose "À venir" or "Ouvert".
+
+Rule:
+- One organizer can have only one tournament with status "Ouvert" at a time.
+
+This is enforced in:
+- TournamentController::ensureSingleOpenTournament()
+- Admin\TournamentsController::ensureOrganizerCanOpenOnlyOneTournament()
+
+Admin can create a tournament for another organizer, but the same rule is enforced for the selected organizer.
+
+
+9. Matches and Bracket System
+-----------------------------
+
+Main controller:
+app/Http/Controllers/Organizer/MatchController.php
+
+Main view:
+resources/views/organizer/matches/index.blade.php
+
+Competitor tournament view:
+resources/views/competitor/tournaments/show.blade.php
+
+The bracket is manual/dynamic:
+- Organizer/admin can generate bracket.
+- Organizer/admin can drag teams between slots.
+- Organizer/admin can declare a winner.
+- Winner advances automatically to the next round.
+
+Only confirmed participants should be used for bracket generation.
+This is why MatchController loads teams that have confirmed registrations.
+
+
+10. Bracket Generation
+----------------------
+
+Method:
+MatchController@generateBracket()
+
+The logic:
+
+1. Load confirmed teams for the tournament.
+
+2. Count teams.
+   If less than 2 teams, bracket cannot be generated.
+
+3. Calculate bracket size as the next power of two.
+   Examples:
+   - 2 teams -> bracket size 2
+   - 3 teams -> bracket size 4
+   - 5 teams -> bracket size 8
+   - 9 teams -> bracket size 16
+
+4. Create matches for every round.
+   Example with 8 bracket size:
+   - Round 1: 4 matches
+   - Round 2: 2 matches
+   - Round 3: 1 final
+
+5. Link each match to its next match.
+   This is stored in next_match_id.
+
+6. Fill round 1 slots with teams.
+
+7. Handle byes.
+   If a team has no opponent in round 1, it automatically becomes winner of that match and advances.
+
+
+11. Moving Teams in the Bracket
+-------------------------------
+
+Method:
+MatchController@updateBracket()
+
+This method receives:
+- match_id
+- slot: team1_id or team2_id
+- team_id
+
+It allows organizer/admin to manually place teams in bracket slots.
+
+Important helper:
+detachTeamFromOtherMatches()
+
+Why this helper exists:
+- A team should not appear in multiple unrelated bracket slots.
+- If you drag a team to a new slot, the system removes it from old slots.
+
+Important helper:
+normalizeMatchTree()
+
+This recalculates a match status:
+- If both teams exist and no winner -> "Programmé"
+- If one or no team exists -> "En attente"
+- If winner exists -> "Terminé"
+
+It also clears invalid winners if the teams in a match changed.
+
+
+12. Declaring Winner and Auto Advancement
+-----------------------------------------
+
+Methods:
+- MatchController@setWinner()
+- MatchController@updateScore()
+
+setWinner() is used by bracket buttons.
+updateScore() is used when entering scores.
+
+When a winner is declared:
+
+1. The match status becomes "Terminé".
+
+2. winner_team_id is saved.
+
+3. advanceWinner() moves the winner into the correct slot of the next match.
+
+How next slot is chosen:
+- Odd position_in_round goes to team1_id in next match.
+- Even position_in_round goes to team2_id in next match.
+
+Example:
+- Round 1, match position 1 winner -> next match team1_id
+- Round 1, match position 2 winner -> next match team2_id
+
+
+13. Stats and Leaderboard
+-------------------------
+
+Stats table:
+competitor_profiles
+
+Fields:
+- games_won
+- games_loss
+
+When a match is finished with a winner, MatchController updates stats:
+
+- Winning team members get games_won + 1.
+- Losing team members get games_loss + 1.
+
+This happens in:
+MatchController::syncProfilesForResult()
+
+The leaderboard reads from:
+app/Http/Controllers/Competitor/LeaderboardController.php
+
+It joins users with competitor_profiles and orders by games_won.
+
+
+14. Competitor Profile
+----------------------
+
+Controller:
+app/Http/Controllers/Competitor/ProfileController.php
+
+View:
+resources/views/competitor/profile.blade.php
+
+The profile separates two different pending states:
+
+1. pendingInvites
+   These are real team invitations.
+   The user has a pending registration with a team_id, but is not yet a member of that team.
+   The profile shows Accept / Refuse buttons.
+
+2. pendingApprovals
+   These are registrations waiting for organizer approval.
+   This includes solo registrations and team creator registrations.
+   The profile does not show Accept / Refuse.
+   It shows a message telling the user to wait for organizer validation.
+
+This distinction fixed the bug where solo competitors saw invitation buttons for their own registration.
+
+
+15. Competitor Tournament Details
+---------------------------------
+
+Controller:
+app/Http/Controllers/Competitor/TournamentExplorerController.php
+
+View:
+resources/views/competitor/tournaments/show.blade.php
+
+This screen shows:
+- Tournament info
+- Join button if user can join
+- User team info
+- Participants
+- Challenge cards
+- Bracket rounds
+- Next match
+
+The bracket only appears if organizer/admin already generated matches.
+
+The competitor can see the bracket at:
+/competitor/tournaments/{id}
+
+
+16. Admin Tournament Management
+-------------------------------
+
+Controller:
+app/Http/Controllers/Admin/TournamentsController.php
+
+View:
+resources/views/admin/tournaments/index.blade.php
+
+Admin can:
+- Create tournament for an organizer
+- Edit any tournament
+- Delete any tournament
+- Open "Inscriptions" page for approval
+- Open "Arbre & matchs" page for bracket/matches
+
+Admin tournament page now displays pending registration count.
+
+
+17. SQLite Local Database
+-------------------------
+
+The project is currently configured to use SQLite locally:
+
+.env
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+
+This avoids needing MySQL locally.
+
+To rebuild fake data:
+
+php artisan migrate:fresh --seed
+
+Seeded accounts:
+
+admin@youcode.ma / password123
+orga1@youcode.ma / password123
+oussama@youcode.ma / password123
+
+
+18. Complex Parts Explained Simply
+----------------------------------
+
+The most complex part is the difference between:
+
+- accepting a team invitation
+- accepting a tournament registration
+
+They are not the same.
+
+Invitation acceptance:
+- Done by competitor.
+- Means "I agree to join this team."
+- Adds user to team_members.
+- Registration stays "En attente".
+
+Registration approval:
+- Done by organizer/admin.
+- Means "This player is allowed in the tournament."
+- Changes Registration.status to "Confirmé".
+
+This separation avoids bugs like:
+- a user appearing as team member without agreeing
+- a user bypassing organizer approval
+- solo players seeing invitation buttons
+
+
+The second complex part is brackets.
+
+The bracket uses matches linked by next_match_id.
+This creates a tree.
+
+Each match knows:
+- its round
+- its position in that round
+- which match comes after it
+
+When a winner is selected, the system does not create a new match.
+It simply places the winner into the correct slot of the next existing match.
+
+
+The third complex part is capacity.
+
+Only confirmed registrations count.
+This is correct because pending users are not officially participants yet.
+However, if capacity is already full with confirmed users, the app blocks new pending registrations too.
+This prevents useless pending requests when no seats are available.
+
+
+19. Useful Commands
+-------------------
+
+Run tests:
+php artisan test
+
+Rebuild SQLite database:
+php artisan migrate:fresh --seed
+
+Clear Laravel cache:
+php artisan optimize:clear
+
+Run local server:
+php artisan serve
+
+
+20. Main Files to Read First
+----------------------------
+
+If you want to understand the project quickly, read these files in this order:
+
+1. routes/web.php
+2. app/Models/Tournament.php
+3. app/Models/Registration.php
+4. app/Http/Controllers/Competitor/TeamController.php
+5. app/Http/Controllers/Organizer/RegistrationController.php
+6. app/Http/Controllers/Organizer/MatchController.php
+7. app/Http/Controllers/Competitor/ProfileController.php
+8. resources/views/organizer/tournaments/show.blade.php
+9. resources/views/organizer/matches/index.blade.php
+10. resources/views/competitor/tournaments/show.blade.php
+

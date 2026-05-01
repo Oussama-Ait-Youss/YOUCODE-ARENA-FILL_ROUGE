@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $roleOptions = ['Admin', 'Organisateur', 'Jury', 'Compétiteur'];
+        $roleOptions = ['Admin', 'Organisateur', 'Compétiteur'];
         $status = $request->string('status')->toString();
         $role = $request->string('role')->toString();
         $search = trim($request->string('q')->toString());
@@ -65,7 +65,7 @@ class UserController extends Controller
     public function changeRole(Request $request, User $user)
     {
         $validated = $request->validate([
-            'role' => ['required', 'string', Rule::in(['Compétiteur', 'Organisateur', 'Jury'])],
+            'role' => ['required', 'string', Rule::in(['Compétiteur', 'Organisateur'])],
         ]);
 
         if ($user->id === auth()->id()) {

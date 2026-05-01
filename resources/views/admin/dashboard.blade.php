@@ -16,7 +16,7 @@
         <div class="glass-card p-6 border-t-4 border-t-gold">
             <div class="text-xs uppercase tracking-[0.25em] text-gray-500 mb-2">Rôles clés</div>
             <div class="text-5xl font-display text-white">{{ $totalOrganizers }}</div>
-            <div class="text-sm text-gray-400 mt-2">{{ $totalAdmins }} admins, {{ $totalJuries }} jurys</div>
+            <div class="text-sm text-gray-400 mt-2">{{ $totalAdmins }} admins, {{ $totalCompetitors }} compétiteurs</div>
         </div>
         <div class="glass-card p-6 border-t-4 border-t-success">
             <div class="text-xs uppercase tracking-[0.25em] text-gray-500 mb-2">Tournois</div>
@@ -62,7 +62,6 @@
                         $barClass = match ($item['color']) {
                             'cyan' => 'bg-cyan',
                             'gold' => 'bg-gold',
-                            'warning' => 'bg-warning',
                             default => 'bg-success',
                         };
                     @endphp
@@ -130,17 +129,17 @@
             <h2 class="text-2xl font-display font-bold text-white mb-4">Accès rapides</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <a href="{{ route('admin.users.index') }}" class="rounded-2xl bg-black/30 p-5 hover:border-cyan border border-transparent transition">
-                    <div class="text-3xl mb-2">👥</div>
+                    <div class="text-3xl mb-2">Users</div>
                     <div class="font-bold text-white">Gérer les utilisateurs</div>
                     <div class="text-sm text-gray-400 mt-1">Recherche, filtres, rôles et bannissements.</div>
                 </a>
                 <a href="{{ route('admin.tournaments.index') }}" class="rounded-2xl bg-black/30 p-5 hover:border-gold border border-transparent transition">
-                    <div class="text-3xl mb-2">🏆</div>
+                    <div class="text-3xl mb-2">Cup</div>
                     <div class="font-bold text-white">Superviser les tournois</div>
                     <div class="text-sm text-gray-400 mt-1">Modération, accès rapide aux écrans organisateurs.</div>
                 </a>
                 <a href="{{ route('admin.tournaments.create') }}" class="rounded-2xl bg-black/30 p-5 hover:border-success border border-transparent transition">
-                    <div class="text-3xl mb-2">➕</div>
+                    <div class="text-3xl mb-2">+</div>
                     <div class="font-bold text-white">Créer un tournoi</div>
                     <div class="text-sm text-gray-400 mt-1">Création centralisée avec organisateur assigné.</div>
                 </a>

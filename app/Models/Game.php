@@ -17,6 +17,11 @@ class Game extends Model
 
     }
 
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
     public function requiresTeamInvite(): bool
     {
         $name = mb_strtolower($this->name ?? '');

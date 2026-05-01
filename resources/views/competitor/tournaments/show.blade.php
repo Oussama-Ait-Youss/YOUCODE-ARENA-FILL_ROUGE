@@ -163,7 +163,7 @@
                                         </div>
                                         
                                         <span class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full 
-                                            {{ $memberReg && in_array($memberReg->status, ['Confirmé', 'Accepté']) ? 'bg-success/10 text-success border border-success/20' : 'bg-gold/10 text-gold border border-gold/20' }}">
+                                            {{ $memberReg && $memberReg->status === 'Confirmé' ? 'bg-success/10 text-success border border-success/20' : 'bg-gold/10 text-gold border border-gold/20' }}">
                                             {{ $memberReg ? $memberReg->status : 'En attente' }}
                                         </span>
                                     </div>

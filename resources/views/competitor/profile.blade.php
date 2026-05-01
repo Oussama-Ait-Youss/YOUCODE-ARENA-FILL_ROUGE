@@ -109,13 +109,6 @@
             </div>
         </div>
 
-        @php
-            $pendingInvites = auth()->user()->registrations()
-                ->where('status', 'En attente')
-                ->with('tournament')
-                ->get();
-        @endphp
-
         @if($pendingInvites->count() > 0)
             <h2 class="text-2xl font-display font-bold text-gold mb-6 uppercase tracking-wider flex items-center gap-2">
                 <span class="animate-bounce">✉️</span> Invitations Reçues ({{ $pendingInvites->count() }})
@@ -147,6 +140,29 @@
                                 </button>
                             </form>
                         </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        @if($pendingApprovals->count() > 0)
+            <h2 class="text-2xl font-display font-bold text-cyan mb-6 uppercase tracking-wider flex items-center gap-2">
+                Inscriptions en attente ({{ $pendingApprovals->count() }})
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                @foreach($pendingApprovals as $registration)
+                    <div class="glass-card p-6 rounded-xl border-l-4 border-l-cyan relative overflow-hidden group">
+                        <span class="text-cyan font-bold text-xs tracking-widest uppercase bg-cyan/10 px-2 py-1 rounded">
+                            Validation organisateur
+                        </span>
+                        <h3 class="text-xl font-bold text-white mt-3">{{ $registration->tournament->title }}</h3>
+                        <p class="text-sm text-gray-400 mt-1">
+                            Ton inscription est enregistrée. L'organisateur doit encore l'accepter.
+                        </p>
+                        @if($registration->team)
+                            <p class="text-xs text-gray-500 mt-3">Équipe : {{ $registration->team->name }}</p>
+                        @endif
                     </div>
                 @endforeach
             </div>
