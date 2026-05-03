@@ -20,7 +20,7 @@ return new class extends Migration
         $table->foreignId('winner_team_id')->nullable()->constrained('teams')->nullOnDelete();
         $table->string('score', 50)->nullable(); 
         
-        $table->string('status')->default('Programmé'); 
+        $table->string('status')->default('Programmé');
         $table->dateTime('played_at')->nullable();
         $table->timestamps();
     });

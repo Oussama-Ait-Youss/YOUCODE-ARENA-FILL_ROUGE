@@ -19,6 +19,7 @@ class MatchController extends Controller
             ->whereHas('registrations', fn ($query) => $query->where('status', 'Confirmé'))
             ->with('members')
             ->get();
+
         $planningMatches = $tournament->matches()
             ->with(['team1', 'team2', 'winnerTeam'])
             ->latest()
@@ -26,19 +27,20 @@ class MatchController extends Controller
 
         $bracketMatches = $tournament->matches()
             ->whereNotNull('round')
-
-
             ->orderBy('round')
             ->orderBy('position_in_round')
             ->get();
 
         $bracketRounds = $bracketMatches->groupBy('round')->sortKeys();
+
         $assignedTeamIds = $bracketMatches->pluck('team1_id')
             ->merge($bracketMatches->pluck('team2_id'))
             ->filter()
             ->unique()
             ->values();
+
         $availableTeams = $teams->whereNotIn('id', $assignedTeamIds)->values();
+
         $roundOneMatches = (int) ($bracketRounds->first()?->count() ?? 0);
 
         return view('organizer.matches.index', compact(
@@ -88,6 +90,7 @@ class MatchController extends Controller
             ->orderBy('id')
             ->get()
             ->values();
+
         $teamCount = $teams->count();
 
         if ($teamCount < 2) {
@@ -95,6 +98,7 @@ class MatchController extends Controller
         }
 
         DB::transaction(function () use ($tournament, $teams, $teamCount) {
+
             $tournament->matches()->delete();
 
             $bracketSize = 2;
@@ -130,8 +134,10 @@ class MatchController extends Controller
             $firstRoundMatches = collect($createdRounds[1])->values();
 
             foreach ($firstRoundMatches as $index => $match) {
+
                 $team1Id = $teamIds[$index * 2] ?? null;
                 $team2Id = $teamIds[$index * 2 + 1] ?? null;
+
                 $payload = [
                     'team1_id' => $team1Id,
                     'team2_id' => $team2Id,
@@ -151,6 +157,7 @@ class MatchController extends Controller
                         'winner_team_id' => $team1Id ?: $team2Id,
                         'status' => 'Terminé',
                     ]);
+
                     $this->advanceWinner($match->fresh());
                 }
             }
@@ -163,34 +170,45 @@ class MatchController extends Controller
     {
         abort_unless($this->canManageTournament($tournament), 403);
 
-        $match = \App\Models\Matchh::where('tournament_id', $tournament->id)->findOrFail($matchId);
+        $match = Matchh::where('tournament_id', $tournament->id)
+            ->findOrFail($matchId);
 
         $request->validate([
             'score_team1' => 'required|integer|min:0',
             'score_team2' => 'required|integer|min:0',
         ]);
 
-        $winner_id = null;
-        if ($request->score_team1 > $request->score_team2) {
-            $winner_id = $match->team1_id;
-        } elseif ($request->score_team2 > $request->score_team1) {
-            $winner_id = $match->team2_id;
-        }
+        DB::transaction(function () use ($match, $request) {
 
-        DB::transaction(function () use ($match, $request, $winner_id) {
             $previousWinnerId = $match->winner_team_id;
+
+            $winner_id = null;
+            $status = 'Terminé';
+
+            if ($request->score_team1 == $request->score_team2) {
+                $status = 'Draw';
+            } elseif ($request->score_team1 > $request->score_team2) {
+                $winner_id = $match->team1_id;
+            } else {
+                $winner_id = $match->team2_id;
+            }
 
             $match->update([
                 'score' => $request->score_team1 . ' - ' . $request->score_team2,
                 'winner_team_id' => $winner_id,
-                'status' => 'Terminé'
+                'status' => $status
             ]);
 
-            $this->syncProfilesForResult($match->fresh(['team1.members', 'team2.members']), $previousWinnerId, $winner_id);
+            $this->syncProfilesForResult(
+                $match->fresh(['team1.members', 'team2.members']),
+                $previousWinnerId,
+                $winner_id
+            );
+
             $this->advanceWinner($match);
         });
 
-        return back()->with('success', 'Le score a été enregistré et le match est terminé ! 🏆');
+        return back()->with('success', 'Le score a été enregistré et le match est terminé !');
     }
 
     public function updateBracket(Request $request, Tournament $tournament)
@@ -198,23 +216,27 @@ class MatchController extends Controller
         abort_unless($this->canManageTournament($tournament), 403);
 
         $validated = $request->validate([
-            'match_id' => ['required', Rule::exists('matches', 'id')->where(fn ($query) => $query->where('tournament_id', $tournament->id))],
+            'match_id' => ['required', Rule::exists('matches', 'id')->where(fn ($q) => $q->where('tournament_id', $tournament->id))],
             'slot' => 'required|in:team1_id,team2_id',
             'team_id' => [
                 'nullable',
-                Rule::exists('teams', 'id')->where(fn ($query) => $query->where('tournament_id', $tournament->id)),
+                Rule::exists('teams', 'id')->where(fn ($q) => $q->where('tournament_id', $tournament->id)),
             ],
         ]);
 
-        $match = Matchh::where('tournament_id', $tournament->id)->findOrFail($validated['match_id']);
+        $match = Matchh::where('tournament_id', $tournament->id)
+            ->findOrFail($validated['match_id']);
+
         $teamId = $validated['team_id'] ?? null;
 
         DB::transaction(function () use ($tournament, $match, $validated, $teamId) {
+
             if ($teamId) {
                 $this->detachTeamFromOtherMatches($tournament->id, $teamId, [$match->id]);
             }
 
             $match->refresh();
+
             $otherSlot = $validated['slot'] === 'team1_id' ? 'team2_id' : 'team1_id';
 
             if ($teamId && $match->{$otherSlot} === $teamId) {
@@ -235,8 +257,8 @@ class MatchController extends Controller
         abort_unless($this->canManageTournament($tournament), 403);
 
         $validated = $request->validate([
-            'match_id' => ['required', Rule::exists('matches', 'id')->where(fn ($query) => $query->where('tournament_id', $tournament->id))],
-            'winner_team_id' => ['required', Rule::exists('teams', 'id')->where(fn ($query) => $query->where('tournament_id', $tournament->id))],
+            'match_id' => ['required', Rule::exists('matches', 'id')->where(fn ($q) => $q->where('tournament_id', $tournament->id))],
+            'winner_team_id' => ['required', Rule::exists('teams', 'id')->where(fn ($q) => $q->where('tournament_id', $tournament->id))],
         ]);
 
         $match = Matchh::where('id', $validated['match_id'])
@@ -245,11 +267,11 @@ class MatchController extends Controller
 
         abort_unless(
             in_array($validated['winner_team_id'], array_filter([$match->team1_id, $match->team2_id]), true),
-            422,
-            'Le gagnant doit faire partie du match.'
+            422
         );
 
         DB::transaction(function () use ($match, $validated) {
+
             $previousWinnerId = $match->winner_team_id;
 
             $match->update([
@@ -257,16 +279,22 @@ class MatchController extends Controller
                 'status' => 'Terminé',
             ]);
 
-            $this->syncProfilesForResult($match->fresh(['team1.members', 'team2.members']), $previousWinnerId, (int) $validated['winner_team_id']);
+            $this->syncProfilesForResult(
+                $match->fresh(['team1.members', 'team2.members']),
+                $previousWinnerId,
+                (int) $validated['winner_team_id']
+            );
+
             $this->advanceWinner($match);
         });
 
-        return response()->json(['success' => true, 'message' => 'Gagnant déclaré !']);
+        return response()->json(['success' => true]);
     }
 
     private function normalizeMatchTree(Matchh $match): void
     {
         $match->refresh();
+
         $validTeamIds = collect([$match->team1_id, $match->team2_id])->filter()->values();
         $previousWinner = $match->winner_team_id;
 
@@ -292,15 +320,10 @@ class MatchController extends Controller
 
     private function clearProgression(Matchh $match, int $winnerTeamId): void
     {
-        if (!$match->next_match_id) {
-            return;
-        }
+        if (!$match->next_match_id) return;
 
         $nextMatch = Matchh::find($match->next_match_id);
-
-        if (!$nextMatch) {
-            return;
-        }
+        if (!$nextMatch) return;
 
         $targetSlot = $this->nextSlotFor($match);
 
@@ -313,17 +336,22 @@ class MatchController extends Controller
 
     private function advanceWinner(Matchh $match): void
     {
-        if (!$match->next_match_id || !$match->winner_team_id) {
+        if (
+            !$match->next_match_id ||
+            !$match->winner_team_id ||
+            $match->status === 'Draw'
+        ) {
             return;
         }
 
-        $this->detachTeamFromOtherMatches($match->tournament_id, $match->winner_team_id, [$match->id]);
+        $this->detachTeamFromOtherMatches(
+            $match->tournament_id,
+            $match->winner_team_id,
+            [$match->id]
+        );
 
         $nextMatch = Matchh::find($match->next_match_id);
-
-        if (!$nextMatch) {
-            return;
-        }
+        if (!$nextMatch) return;
 
         $targetSlot = $this->nextSlotFor($match);
         $otherSlot = $targetSlot === 'team1_id' ? 'team2_id' : 'team1_id';
@@ -340,7 +368,7 @@ class MatchController extends Controller
 
     private function syncProfilesForResult(Matchh $match, ?int $previousWinnerId, ?int $newWinnerId): void
     {
-        if (!$newWinnerId || $previousWinnerId === $newWinnerId) {
+        if (!$newWinnerId || $match->status === 'Draw' || $previousWinnerId === $newWinnerId) {
             return;
         }
 
@@ -356,9 +384,7 @@ class MatchController extends Controller
         $winningTeam = $winnerTeamId === $match->team1_id ? $match->team1 : $match->team2;
         $losingTeam = $winnerTeamId === $match->team1_id ? $match->team2 : $match->team1;
 
-        if (!$winningTeam || !$losingTeam) {
-            return;
-        }
+        if (!$winningTeam || !$losingTeam) return;
 
         foreach ($winningTeam->members as $member) {
             $profile = $member->competitorProfile()->firstOrCreate(['user_id' => $member->id]);
@@ -377,10 +403,10 @@ class MatchController extends Controller
             ->whereNotIn('id', $exceptMatchIds)
             ->where(function ($query) use ($teamId) {
                 $query->where('team1_id', $teamId)
-                    ->orWhere('team2_id', $teamId);
+                      ->orWhere('team2_id', $teamId);
             })
-            ->get()
             ->each(function (Matchh $existingMatch) use ($teamId) {
+
                 if ($existingMatch->team1_id === $teamId) {
                     $existingMatch->team1_id = null;
                 }
@@ -401,6 +427,7 @@ class MatchController extends Controller
 
     private function canManageTournament(Tournament $tournament): bool
     {
-        return auth()->user()->hasRole('Admin') || $tournament->organizer_id === auth()->id();
+        return auth()->user()->hasRole('Admin')
+            || $tournament->organizer_id === auth()->id();
     }
 }
